@@ -1,9 +1,9 @@
 # Usage examples:
 #
-#   nix-shell ghc.nix/ [--pure] --arg withDocs true --run \
+#   nix-shell ghc.nix/ --pure --arg withDocs true --run \
 #     './boot && ./configure $GMP_CONFIGURE_FLAGS && make -j4'
 #
-#   nix-shell ghc.nix/ [--pure] --run \
+#   nix-shell ghc.nix/ --pure --run \
 #     'env config_args=$GMP_CONFIGURE_ARGS THREADS=2 ./validate --slow'
 #
 { nixpkgs   ? import <nixpkgs> {}
