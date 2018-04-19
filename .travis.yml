@@ -1,0 +1,15 @@
+language: nix
+matrix:
+  include:
+    - os: linux
+      script:
+        - echo 'BuildFlavour=quickest' > mk/build.mk
+        - echo 'INTEGER_LIBRARY=integer-simple' >> mk/build.mk
+        - nix-shell default.nix --pure --run \
+            './boot && ./configure $CURSES_CONFIGURE_FLAGS && make -j V=0'
+    - os: linux
+      script:
+        - echo 'BuildFlavour=quickest' > mk/build.mk
+        - echo 'INTEGER_LIBRARY=integer-gmp' >> mk/build.mk
+        - nix-shell default.nix --pure --run \
+            './boot && ./configure $ALL_CONFIGURE_FLAGS && make -j V=0'

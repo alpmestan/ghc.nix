@@ -56,16 +56,24 @@ stdenv.mkDerivation rec {
   '' + stdenv.lib.optionalString (mkFile != null) ''
     cp ${mkFile} mk/build.mk
   '';
-  configureFlags      = [ GMP_CONFIGURE_FLAGS ] ;
+  configureFlags      = [ GMP_CONFIGURE_FLAGS CURSES_CONFIGURE_FLAGS] ;
   CC                  = "${stdenv.cc}/bin/cc"   ;
   CC_STAGE0           = "${stdenv.cc}/bin/cc"   ;
   CFLAGS              = "-I${env}/include"      ;
   CPPFLAGS            = "-I${env}/include"      ;
   LDFLAGS             = "-L${env}/lib"          ;
   LD_LIBRARY_PATH     = "${env}/lib"            ;
+
+  CONFARGS            = "${ALL_CONFIGURE_FLAGS}";
+  ALL_CONFIGURE_FLAGS = ''
+    ${GMP_CONFIGURE_FLAGS}
+    ${CURSES_CONFIGURE_FLAGS}
+  '';
   GMP_CONFIGURE_FLAGS = ''
     --with-gmp-includes=${env}/include
     --with-gmp-libraries=${env}/lib
+  '';
+  CURSES_CONFIGURE_FLAGS = ''
     --with-curses-includes=${env}/include
     --with-curses-libraries=${env}/lib
   '';
