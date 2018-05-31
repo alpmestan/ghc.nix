@@ -1,10 +1,16 @@
 # Usage examples:
 #
-#   nix-shell ghc.nix/ --pure --arg withDocs true --run \
-#     './boot && ./configure $GMP_CONFIGURE_FLAGS && make -j4'
+#   nix-shell path/to/ghc.nix/ --pure --arg withDocs true --run \
+#     './boot && ./configure $ALL_CONFIGURE_FLAGS && make -j4'
 #
-#   nix-shell ghc.nix/ --pure --run \
-#     'env config_args=$GMP_CONFIGURE_ARGS THREADS=2 ./validate --slow'
+#   nix-shell path/to/ghc.nix/ --pure --run \
+#     'env config_args=$ALL_CONFIGURE_FLAGS THREADS=2 ./validate --slow'
+#
+# You can also use this nix expression for building GHC with
+# Hadrian, as follows:
+#
+#   nix-shell path/to/ghc.nix/ --run \
+#     './boot && ./configure $ALL_CONFIGURE_FLAGS && hadrian/build.sh -j'
 #
 { nixpkgs   ? import <nixpkgs> {}
 , src       ? ./.
@@ -35,7 +41,6 @@ let
       ]
       ++ docsPackages
       ++ stdenv.lib.optional withLlvm llvm_5 ;
-
     env = buildEnv {
       name = "ghc-build-environment";
       paths = deps;
@@ -45,7 +50,7 @@ in
 
 stdenv.mkDerivation rec {
   name = "ghc-${version}";
-  buildInputs = [ env ];
+  buildInputs = [ env arcanist ];
   inherit src;
   postPatch = "patchShebangs .";
   preConfigure = ''
