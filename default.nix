@@ -13,7 +13,6 @@
 #     './boot && ./configure $ALL_CONFIGURE_FLAGS && hadrian/build.sh -j'
 #
 { nixpkgs   ? import <nixpkgs> {}
-, src       ? ./.
 , bootghc   ? "ghc822"
 , version   ? "8.5"
 , withLlvm  ? false
@@ -51,7 +50,7 @@ in
 stdenv.mkDerivation rec {
   name = "ghc-${version}";
   buildInputs = [ env arcanist ];
-  inherit src;
+  phases = ["nobuild"];
   postPatch = "patchShebangs .";
   preConfigure = ''
     echo Running preConfigure...
@@ -96,4 +95,8 @@ stdenv.mkDerivation rec {
   '';
   enableParallelBuilding = true;
   stripDebufFlags = [ "-S" ];
+
+  nobuild = ''
+    echo Do not run this derivation with nix-build, it can only be used with nix-shell
+  '';
 }
