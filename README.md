@@ -10,7 +10,7 @@ for more details.
 
 
 ``` sh
-$ echo 'BuildFlavour=quickest' > mk/build.mk
+$ sed -e '/BuildFlavour = quickest/ s/^#//' mk/build.mk.sample > mk/build.mk
 $ nix-shell ghc.nix/ [--pure] --arg withDocs true --run \
     './boot && ./configure $GMP_CONFIGURE_FLAGS && make -j4'
 ```
