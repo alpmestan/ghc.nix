@@ -16,7 +16,7 @@
 , bootghc   ? "ghc822"
 , version   ? "8.5"
 , withLlvm  ? false
-, withDocs  ? false
+, withDocs  ? true
 , mkFile    ? null
 }:
 
