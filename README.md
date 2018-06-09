@@ -11,7 +11,7 @@ for more details.
 
 ``` sh
 $ sed -e '/BuildFlavour = quickest/ s/^#//' mk/build.mk.sample > mk/build.mk
-$ nix-shell ghc.nix/ [--pure] --arg withDocs true --run \
+$ nix-shell ~/ghc.nix/ [--pure] --arg withDocs true --run \
     './boot && ./configure $GMP_CONFIGURE_FLAGS && make -j4'
 ```
 
