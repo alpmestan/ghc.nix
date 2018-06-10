@@ -15,6 +15,17 @@ $ nix-shell ~/ghc.nix/ [--pure] --arg withDocs true --run \
     './boot && ./configure $GMP_CONFIGURE_FLAGS && make -j4'
 ```
 
+You can alternatively use Hadrian to build GHC:
+
+``` sh
+$ nix-shell ~/ghc.nix/
+# from the nix shell:
+$ ./boot && ./configure $GMP_CONFIGURE_FLAGS
+# example hadrian command: use 4 cores, build a 'quickest' flavoured GHC
+# and place all the build artifacts under ./_mybuild/.
+$ hadrian/build.sh -j4 --flavour=quickest --build-root=_mybuild
+```
+
 ## Running `./validate`
 
 ``` sh
