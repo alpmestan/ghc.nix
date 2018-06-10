@@ -23,7 +23,12 @@
 with nixpkgs;
 
 let
-    ourtexlive = texlive.combined.scheme-small;
+    ourtexlive =
+      nixpkgs.texlive.combine {
+        inherit (nixpkgs.texlive) scheme-small collection-xetex fncychap titlesec tabulary varwidth framed capt-of wrapfig needspace dejavu-otf; };
+
+    fonts = nixpkgs.makeFontsConf { fontDirectories = [ nixpkgs.dejavu_fonts ]; };
+
     docsPackages = if withDocs then [ python3Packages.sphinx ourtexlive ] else [];
     noTest = pkg: haskell.lib.dontCheck pkg;
 
@@ -76,6 +81,8 @@ stdenv.mkDerivation rec {
   shellHook           = let llvmStr = if withLlvm then "YES" else "NO"; in ''
     # somehow, CC gets overriden so we set it again here.
     export CC=${stdenv.cc}/bin/cc
+
+    ${lib.optionalString withDocs "export FONTCONFIG_FILE=${fonts}"}
 
     # export NIX_LDFLAGS+= " -rpath ${src}/inplace/lib/ghc-${version}"
 
