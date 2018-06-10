@@ -19,10 +19,9 @@ $ nix-shell ~/ghc.nix/ [--pure] --arg withDocs true --run \
 
 ``` sh
 $ nix-shell ~/ghc.nix/ --pure --run \
-    'env config_args=$GMP_CONFIGURE_ARGS THREADS=2 ./validate --slow'
+    'env config_args=$GMP_CONFIGURE_ARGS THREADS=2 ./validate'
 ```
-
-Please take into account `--slow` flag in the command above as it will include stage2 build thus it could take a while. See other flags of `validate` by invoking `./validate --help` or just by reading its source code.
+See other flags of `validate` by invoking `./validate --help` or just by reading its source code. Note that `./validate --slow` builds the compiler in debug mode which has the side-effect of disabling performance tests.
 
 ## TODO
 
