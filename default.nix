@@ -18,6 +18,7 @@
 , withLlvm  ? false
 , withDocs  ? true
 , mkFile    ? null
+, cores     ? 4
 }:
 
 with nixpkgs;
@@ -101,7 +102,7 @@ stdenv.mkDerivation rec {
     echo https://github.com/alpmestan/ghc.nix
   '';
   enableParallelBuilding = true;
-  stripDebufFlags = [ "-S" ];
+  NIX_BUILD_CORES = cores;
 
   nobuild = ''
     echo Do not run this derivation with nix-build, it can only be used with nix-shell
