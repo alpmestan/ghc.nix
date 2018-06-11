@@ -103,6 +103,7 @@ stdenv.mkDerivation rec {
   '';
   enableParallelBuilding = true;
   NIX_BUILD_CORES = cores;
+  stripDebugFlags = [ "-S" ];
 
   nobuild = ''
     echo Do not run this derivation with nix-build, it can only be used with nix-shell
