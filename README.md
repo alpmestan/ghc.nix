@@ -11,8 +11,8 @@ for more details.
 
 ``` sh
 $ sed -e '/BuildFlavour = quickest/ s/^#//' mk/build.mk.sample > mk/build.mk
-$ nix-shell ~/ghc.nix/ [--pure] --arg withDocs true --run \
-    './boot && ./configure $GMP_CONFIGURE_FLAGS && make -j4'
+$ nix-shell ~/ghc.nix/ --run './boot && ./configure && make -j4'
+# works with --pure too
 ```
 
 You can alternatively use Hadrian to build GHC:
@@ -20,18 +20,19 @@ You can alternatively use Hadrian to build GHC:
 ``` sh
 $ nix-shell ~/ghc.nix/
 # from the nix shell:
-$ ./boot && ./configure $GMP_CONFIGURE_FLAGS
+$ ./boot && ./configure
 # example hadrian command: use 4 cores, build a 'quickest' flavoured GHC
 # and place all the build artifacts under ./_mybuild/.
 $ hadrian/build.sh -j4 --flavour=quickest --build-root=_mybuild
+# you could also ask hadrian to boot and configure for you, with -c
 ```
 
 ## Running `./validate`
 
 ``` sh
-$ nix-shell ~/ghc.nix/ --pure --run \
-    'env config_args=$GMP_CONFIGURE_ARGS THREADS=2 ./validate'
+$ nix-shell ~/ghc.nix/ --pure --run 'THREADS=4 ./validate'
 ```
+
 See other flags of `validate` by invoking `./validate --help` or just by reading its source code. Note that `./validate --slow` builds the compiler in debug mode which has the side-effect of disabling performance tests.
 
 ## TODO
