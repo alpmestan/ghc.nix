@@ -66,19 +66,17 @@ stdenv.mkDerivation rec {
   '' + stdenv.lib.optionalString (mkFile != null) ''
     cp ${mkFile} mk/build.mk
   '';
-  configureFlags      = [ GMP_CONFIGURE_FLAGS ] ;
   CC                  = "${stdenv.cc}/bin/cc"   ;
   CC_STAGE0           = "${stdenv.cc}/bin/cc"   ;
   CFLAGS              = "-I${env}/include"      ;
   CPPFLAGS            = "-I${env}/include"      ;
   LDFLAGS             = "-L${env}/lib"          ;
   LD_LIBRARY_PATH     = "${env}/lib"            ;
-  GMP_CONFIGURE_FLAGS = ''
-    --with-gmp-includes=${env}/include
-    --with-gmp-libraries=${env}/lib
-    --with-curses-includes=${env}/include
-    --with-curses-libraries=${env}/lib
-  '';
+  GMP_LIB_DIRS        = "${env}/lib"            ;
+  GMP_INCLUDE_DIRS    = "${env}/include"        ;
+  CURSES_LIB_DIRS     = "${env}/lib"            ;
+  CURSES_INCLUDE_DIRS = "${env}/include"        ;
+
   shellHook           = let llvmStr = if withLlvm then "YES" else "NO"; in ''
     # somehow, CC gets overriden so we set it again here.
     export CC=${stdenv.cc}/bin/cc
