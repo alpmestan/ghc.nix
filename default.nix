@@ -1,16 +1,8 @@
 # Usage examples:
 #
-#   nix-shell path/to/ghc.nix/ --pure --arg withDocs true --run \
-#     './boot && ./configure $ALL_CONFIGURE_FLAGS && make -j4'
-#
-#   nix-shell path/to/ghc.nix/ --pure --run \
-#     'env config_args=$ALL_CONFIGURE_FLAGS THREADS=2 ./validate --slow'
-#
-# You can also use this nix expression for building GHC with
-# Hadrian, as follows:
-#
-#   nix-shell path/to/ghc.nix/ --run \
-#     './boot && ./configure $ALL_CONFIGURE_FLAGS && hadrian/build.sh -j'
+#   nix-shell path/to/ghc.nix/ --pure --run './boot && ./configure && make -j4'
+#   nix-shell path/to/ghc.nix/        --run 'hadrian/build.sh -c -j4 --flavour=quickest'
+#   nix-shell path/to/ghc.nix/        --run 'THREADS=4 ./validate --slow'
 #
 { nixpkgs   ? import <nixpkgs> {}
 , bootghc   ? "ghc822"
