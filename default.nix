@@ -68,6 +68,7 @@ stdenv.mkDerivation rec {
   GMP_INCLUDE_DIRS    = "${env}/include"        ;
   CURSES_LIB_DIRS     = "${env}/lib"            ;
   CURSES_INCLUDE_DIRS = "${env}/include"        ;
+  configureFlags      = lib.concatStringsSep " " [];
 
   shellHook           = let toYesNo = b: if b then "YES" else "NO"; in ''
     # somehow, CC gets overriden so we set it again here.
@@ -87,6 +88,7 @@ stdenv.mkDerivation rec {
     echo "    LDFLAGS         = $LDFLAGS"
     echo "    LD_LIBRARY_PATH = ${env}/lib"
     echo "    LLVM            = ${toYesNo withLlvm}"
+    echo "    configure flags = ${configureFlags}"
     echo
     echo Please report bugs, problems or contributions to
     echo https://github.com/alpmestan/ghc.nix
