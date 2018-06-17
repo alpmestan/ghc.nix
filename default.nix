@@ -10,6 +10,7 @@
 , useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
 , withDocs  ? true
+, withDwarf ? true   # enable libdw unwinding support
 , mkFile    ? null
 , cores     ? 4
 }:
@@ -44,7 +45,8 @@ let
 	))
       ]
       ++ docsPackages
-      ++ stdenv.lib.optional withLlvm llvm_6 ;
+      ++ stdenv.lib.optional withLlvm llvm_6
+      ++ stdenv.lib.optional withDwarf elfutils ;
     env = buildEnv {
       name = "ghc-build-environment";
       paths = deps;
@@ -76,7 +78,8 @@ stdenv.mkDerivation rec {
   GMP_INCLUDE_DIRS    = "${env}/include"             ;
   CURSES_LIB_DIRS     = "${env}/lib"                 ;
   CURSES_INCLUDE_DIRS = "${env}/include"             ;
-  configureFlags      = lib.concatStringsSep " " []  ;
+  configureFlags      = lib.concatStringsSep " "
+    ( lib.optional withDwarf "--enable-dwarf-unwind" ) ;
 
   shellHook           = let toYesNo = b: if b then "YES" else "NO"; in ''
     # somehow, CC gets overriden so we set it again here.
@@ -96,6 +99,7 @@ stdenv.mkDerivation rec {
     echo "    LDFLAGS         = $LDFLAGS"
     echo "    LD_LIBRARY_PATH = ${env}/lib"
     echo "    LLVM            = ${toYesNo withLlvm}"
+    echo "    libdw           = ${toYesNo withDwarf}"
     echo "    configure flags = ${configureFlags}"
     echo
     echo Please report bugs, problems or contributions to
