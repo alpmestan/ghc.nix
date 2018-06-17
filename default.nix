@@ -37,7 +37,7 @@ let
 	))
       ]
       ++ docsPackages
-      ++ stdenv.lib.optional withLlvm llvm_5 ;
+      ++ stdenv.lib.optional withLlvm llvm_6 ;
     env = buildEnv {
       name = "ghc-build-environment";
       paths = deps;
