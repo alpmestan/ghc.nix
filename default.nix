@@ -40,10 +40,10 @@ let
         ncurses.dev ncurses.out
         perl git file which python3
         (haskell.packages.${bootghc}.ghcWithPackages (ps:
-	  [ (noTest ps.alex)
-	    (noTest ps.happy)
-	  ]
-	))
+          [ (noTest ps.alex)
+            (noTest ps.happy)
+          ]
+        ))
       ]
       ++ docsPackages
       ++ stdenv.lib.optional withLlvm llvm_6
