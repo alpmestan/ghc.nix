@@ -7,6 +7,7 @@
 { nixpkgs   ? import <nixpkgs> {}
 , bootghc   ? "ghc822"
 , version   ? "8.5"
+, useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
 , withDocs  ? true
 , mkFile    ? null
@@ -15,6 +16,12 @@
 
 with nixpkgs;
 
+let 
+    stdenv =
+      if useClang
+      then nixpkgs.clangStdenv
+      else nixpkgs.stdenv;
+in
 let
     ourtexlive =
       nixpkgs.texlive.combine {
@@ -58,17 +65,18 @@ stdenv.mkDerivation rec {
   '' + stdenv.lib.optionalString (mkFile != null) ''
     cp ${mkFile} mk/build.mk
   '';
-  CC                  = "${stdenv.cc}/bin/cc"   ;
-  CC_STAGE0           = "${stdenv.cc}/bin/cc"   ;
-  CFLAGS              = "-I${env}/include"      ;
-  CPPFLAGS            = "-I${env}/include"      ;
-  LDFLAGS             = "-L${env}/lib"          ;
-  LD_LIBRARY_PATH     = "${env}/lib"            ;
-  GMP_LIB_DIRS        = "${env}/lib"            ;
-  GMP_INCLUDE_DIRS    = "${env}/include"        ;
-  CURSES_LIB_DIRS     = "${env}/lib"            ;
-  CURSES_INCLUDE_DIRS = "${env}/include"        ;
-  configureFlags      = lib.concatStringsSep " " [];
+  # N.B. CC gets overridden by stdenv
+  CC                  = "${stdenv.cc}/bin/cc"        ;
+  CC_STAGE0           = CC                           ;
+  CFLAGS              = "-I${env}/include"           ;
+  CPPFLAGS            = "-I${env}/include"           ;
+  LDFLAGS             = "-L${env}/lib"               ;
+  LD_LIBRARY_PATH     = "${env}/lib"                 ;
+  GMP_LIB_DIRS        = "${env}/lib"                 ;
+  GMP_INCLUDE_DIRS    = "${env}/include"             ;
+  CURSES_LIB_DIRS     = "${env}/lib"                 ;
+  CURSES_INCLUDE_DIRS = "${env}/include"             ;
+  configureFlags      = lib.concatStringsSep " " []  ;
 
   shellHook           = let toYesNo = b: if b then "YES" else "NO"; in ''
     # somehow, CC gets overriden so we set it again here.
