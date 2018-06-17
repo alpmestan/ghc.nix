@@ -11,6 +11,7 @@
 , withLlvm  ? false
 , withDocs  ? true
 , withDwarf ? true   # enable libdw unwinding support
+, withNuma  ? true
 , mkFile    ? null
 , cores     ? 4
 }:
@@ -46,6 +47,7 @@ let
       ]
       ++ docsPackages
       ++ stdenv.lib.optional withLlvm llvm_6
+      ++ stdenv.lib.optional withNuma numactl
       ++ stdenv.lib.optional withDwarf elfutils ;
     env = buildEnv {
       name = "ghc-build-environment";
@@ -100,6 +102,7 @@ stdenv.mkDerivation rec {
     echo "    LD_LIBRARY_PATH = ${env}/lib"
     echo "    LLVM            = ${toYesNo withLlvm}"
     echo "    libdw           = ${toYesNo withDwarf}"
+    echo "    numa            = ${toYesNo withNuma}"
     echo "    configure flags = ${configureFlags}"
     echo
     echo Please report bugs, problems or contributions to
