@@ -7,14 +7,23 @@
 { nixpkgs   ? import <nixpkgs> {}
 , bootghc   ? "ghc822"
 , version   ? "8.5"
+, useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
 , withDocs  ? true
+, withDwarf ? true   # enable libdw unwinding support
+, withNuma  ? true
 , mkFile    ? null
 , cores     ? 4
 }:
 
 with nixpkgs;
 
+let 
+    stdenv =
+      if useClang
+      then nixpkgs.clangStdenv
+      else nixpkgs.stdenv;
+in
 let
     ourtexlive =
       nixpkgs.texlive.combine {
@@ -31,13 +40,15 @@ let
         ncurses.dev ncurses.out
         perl git file which python3
         (haskell.packages.${bootghc}.ghcWithPackages (ps:
-	  [ (noTest ps.alex)
-	    (noTest ps.happy)
-	  ]
-	))
+          [ (noTest ps.alex)
+            (noTest ps.happy)
+          ]
+        ))
       ]
       ++ docsPackages
-      ++ stdenv.lib.optional withLlvm llvm_5 ;
+      ++ stdenv.lib.optional withLlvm llvm_6
+      ++ stdenv.lib.optional withNuma numactl
+      ++ stdenv.lib.optional withDwarf elfutils ;
     env = buildEnv {
       name = "ghc-build-environment";
       paths = deps;
@@ -58,18 +69,21 @@ stdenv.mkDerivation rec {
   '' + stdenv.lib.optionalString (mkFile != null) ''
     cp ${mkFile} mk/build.mk
   '';
-  CC                  = "${stdenv.cc}/bin/cc"   ;
-  CC_STAGE0           = "${stdenv.cc}/bin/cc"   ;
-  CFLAGS              = "-I${env}/include"      ;
-  CPPFLAGS            = "-I${env}/include"      ;
-  LDFLAGS             = "-L${env}/lib"          ;
-  LD_LIBRARY_PATH     = "${env}/lib"            ;
-  GMP_LIB_DIRS        = "${env}/lib"            ;
-  GMP_INCLUDE_DIRS    = "${env}/include"        ;
-  CURSES_LIB_DIRS     = "${env}/lib"            ;
-  CURSES_INCLUDE_DIRS = "${env}/include"        ;
+  # N.B. CC gets overridden by stdenv
+  CC                  = "${stdenv.cc}/bin/cc"        ;
+  CC_STAGE0           = CC                           ;
+  CFLAGS              = "-I${env}/include"           ;
+  CPPFLAGS            = "-I${env}/include"           ;
+  LDFLAGS             = "-L${env}/lib"               ;
+  LD_LIBRARY_PATH     = "${env}/lib"                 ;
+  GMP_LIB_DIRS        = "${env}/lib"                 ;
+  GMP_INCLUDE_DIRS    = "${env}/include"             ;
+  CURSES_LIB_DIRS     = "${env}/lib"                 ;
+  CURSES_INCLUDE_DIRS = "${env}/include"             ;
+  configureFlags      = lib.concatStringsSep " "
+    ( lib.optional withDwarf "--enable-dwarf-unwind" ) ;
 
-  shellHook           = let llvmStr = if withLlvm then "YES" else "NO"; in ''
+  shellHook           = let toYesNo = b: if b then "YES" else "NO"; in ''
     # somehow, CC gets overriden so we set it again here.
     export CC=${stdenv.cc}/bin/cc
 
@@ -86,7 +100,10 @@ stdenv.mkDerivation rec {
     echo "    CPPFLAGS        = $CPPFLAGS"
     echo "    LDFLAGS         = $LDFLAGS"
     echo "    LD_LIBRARY_PATH = ${env}/lib"
-    echo "    LLVM            = ${llvmStr}"
+    echo "    LLVM            = ${toYesNo withLlvm}"
+    echo "    libdw           = ${toYesNo withDwarf}"
+    echo "    numa            = ${toYesNo withNuma}"
+    echo "    configure flags = ${configureFlags}"
     echo
     echo Please report bugs, problems or contributions to
     echo https://github.com/alpmestan/ghc.nix
