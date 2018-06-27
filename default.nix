@@ -36,7 +36,7 @@ let
 
     deps =
       [ autoconf automake m4
-        gmp.dev gmp.out
+        gmp.dev gmp.out glibcLocales
         ncurses.dev ncurses.out
         perl git file which python3
         (haskell.packages.${bootghc}.ghcWithPackages (ps:
@@ -111,6 +111,9 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
   NIX_BUILD_CORES = cores;
   stripDebugFlags = [ "-S" ];
+
+  # see https://github.com/NixOS/nix/issues/318#issuecomment-52986702
+  LOCALE_ARCHIVES = "${glibcLocales}/lib/locale/locale-archive";
 
   nobuild = ''
     echo Do not run this derivation with nix-build, it can only be used with nix-shell
