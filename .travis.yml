@@ -12,7 +12,7 @@ env:
 script:
   - git clone --recursive git://git.haskell.org/ghc.git
   - cd ghc
-  - echo 'BuildFlavour=$FLAVOUR' > mk/build.mk
-  - echo 'INTEGER_LIBRARY=$INTEGER_LIB' >> mk/build.mk
+  - echo "BuildFlavour=$FLAVOUR" > mk/build.mk
+  - echo "INTEGER_LIBRARY=$INTEGER_LIB" >> mk/build.mk
   - cat mk/build.mk
   - nix-shell ../ --run './boot && ./configure && make -j V=0'
