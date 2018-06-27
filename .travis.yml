@@ -1,6 +1,18 @@
 language: nix
+cache:
+  directories:
+    - /nix/store
+env:
+  - FLAVOUR=quickest INTEGER_LIB=integer-simple
+  - FLAVOUR=quickest INTEGER_LIB=integer-gmp
+  - FLAVOUR=perf INTEGER_LIB=integer-simple
+  - FLAVOUR=perf INTEGER_LIB=integer-gmp
+  - FLAVOUR=prof INTEGER_LIB=integer-simple
+  - FLAVOUR=prof INTEGER_LIB=integer-gmp
 script:
   - git clone --recursive git://git.haskell.org/ghc.git
   - cd ghc
-  - echo 'BuildFlavour=quickest' > mk/build.mk
+  - echo 'BuildFlavour=$FLAVOUR' > mk/build.mk
+  - echo 'INTEGER_LIBRARY=$INTEGER_LIB' >> mk/build.mk
+  - cat mk/build.mk
   - nix-shell ../ --run './boot && ./configure && make -j V=0'
