@@ -1,0 +1,6 @@
+language: nix
+script:
+  - git clone --recursive git://git.haskell.org/ghc.git
+  - cd ghc
+  - echo 'BuildFlavour=quickest' > mk/build.mk
+  - nix-shell ../ --run './boot && ./configure && make -j V=0'
