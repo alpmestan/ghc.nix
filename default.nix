@@ -44,6 +44,7 @@ let
             (noTest ps.happy)
           ]
         ))
+        xlibs.lndir  # for source distribution generation
       ]
       ++ docsPackages
       ++ stdenv.lib.optional withLlvm llvm_6
