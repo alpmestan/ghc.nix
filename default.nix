@@ -60,6 +60,7 @@ in
 stdenv.mkDerivation rec {
   name = "ghc-${version}";
   buildInputs = [ env arcanist ];
+  hardeningDisable = [ "fortify" ];
   phases = ["nobuild"];
   postPatch = "patchShebangs .";
   preConfigure = ''
