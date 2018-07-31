@@ -43,6 +43,14 @@ $ nix-shell ~/ghc.nix/ --pure --run 'THREADS=4 ./validate'
 
 See other flags of `validate` by invoking `./validate --help` or just by reading its source code. Note that `./validate --slow` builds the compiler in debug mode which has the side-effect of disabling performance tests.
 
+## Building and running for i686-linux from x86_64-linux
+
+It's trivial!
+
+``` sh
+$ nix-shell ~/ghc.nix/ --arg nixpkgs '(import <nixpkgs> {}).pkgsi686Linux'
+```
+
 ## TODO
 
 - We currently can't just invoke `nix-build` ([#1](https://github.com/alpmestan/ghc.nix/issues/1))
