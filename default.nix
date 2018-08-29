@@ -10,8 +10,8 @@
 , useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
 , withDocs  ? true
-, withDwarf ? true   # enable libdw unwinding support
-, withNuma  ? true
+, withDwarf ? nixpkgs.stdenv.isLinux  # enable libdw unwinding support
+, withNuma  ? nixpkgs.stdenv.isLinux
 , mkFile    ? null
 , cores     ? 4
 }:
