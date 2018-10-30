@@ -18,38 +18,37 @@
 
 with nixpkgs;
 
-let 
+let
     stdenv =
       if useClang
       then nixpkgs.clangStdenv
       else nixpkgs.stdenv;
-in
-let
+    noTest = pkg: haskell.lib.dontCheck pkg;
+
+    hspkgs = haskell.packages.${bootghc};
+
     ourtexlive =
       nixpkgs.texlive.combine {
-        inherit (nixpkgs.texlive) scheme-small collection-xetex fncychap titlesec tabulary varwidth framed capt-of wrapfig needspace dejavu-otf; };
-
+        inherit (nixpkgs.texlive) scheme-small collection-xetex fncychap titlesec tabulary varwidth framed capt-of wrapfig needspace dejavu-otf helvetic; };
     fonts = nixpkgs.makeFontsConf { fontDirectories = [ nixpkgs.dejavu_fonts ]; };
-
     docsPackages = if withDocs then [ python3Packages.sphinx ourtexlive ] else [];
-    noTest = pkg: haskell.lib.dontCheck pkg;
 
     deps =
       [ autoconf automake m4
         gmp.dev gmp.out glibcLocales
         ncurses.dev ncurses.out
         perl git file which python3
-        (haskell.packages.${bootghc}.ghcWithPackages (ps:
-          [ (noTest ps.alex)
-            (noTest ps.happy)
-          ]
-        ))
+        (hspkgs.ghcWithPackages (ps: [ ps.alex ps.happy ]))
         xlibs.lndir  # for source distribution generation
+        cabal-install
+        zlib.out
+        zlib.dev
       ]
       ++ docsPackages
       ++ stdenv.lib.optional withLlvm llvm_6
       ++ stdenv.lib.optional withNuma numactl
       ++ stdenv.lib.optional withDwarf elfutils ;
+
     env = buildEnv {
       name = "ghc-build-environment";
       paths = deps;
