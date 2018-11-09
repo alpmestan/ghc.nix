@@ -5,7 +5,7 @@
 #   nix-shell path/to/ghc.nix/        --run 'THREADS=4 ./validate --slow'
 #
 { nixpkgs   ? import <nixpkgs> {}
-, bootghc   ? "ghc843"
+, bootghc   ? "ghc844"
 , version   ? "8.7"
 , useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
