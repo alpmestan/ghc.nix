@@ -114,7 +114,7 @@ stdenv.mkDerivation rec {
   # Without this, we see a whole bunch of warnings about LANG, LC_ALL and locales in general.
   # In particular, this makes many tests fail because those warnings show up in test outputs too...
   # The solution is from: https://github.com/NixOS/nix/issues/318#issuecomment-52986702
-  LOCALE_ARCHIVES = if stdenv.isLinux then "${glibcLocales}/lib/locale/locale-archive" else "";
+  LOCALE_ARCHIVE = if stdenv.isLinux then "${glibcLocales}/lib/locale/locale-archive" else "";
 
   nobuild = ''
     echo Do not run this derivation with nix-build, it can only be used with nix-shell
