@@ -88,6 +88,9 @@ stdenv.mkDerivation rec {
     # somehow, CC gets overriden so we set it again here.
     export CC=${stdenv.cc}/bin/cc
 
+    # "nix-shell --pure" resets LANG to POSIX, this breaks "make TAGS".
+    export LANG="en_US.UTF-8"
+
     ${lib.optionalString withDocs "export FONTCONFIG_FILE=${fonts}"}
 
     echo Entering a GHC development shell with CFLAGS, CPPFLAGS, LDFLAGS and
