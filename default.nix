@@ -58,7 +58,8 @@ in
 
 stdenv.mkDerivation rec {
   name = "ghc-${version}";
-  buildInputs = [ env arcanist ];
+  buildInputs = [ env arcanist ]
+                ++ stdenv.lib.optionals stdenv.isDarwin [ libiconv ];
   hardeningDisable = [ "fortify" ];
   phases = ["nobuild"];
   postPatch = "patchShebangs .";
