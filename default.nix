@@ -43,6 +43,7 @@ let
         cabal-install
         zlib.out
         zlib.dev
+        pxz
       ]
       ++ docsPackages
       ++ stdenv.lib.optional withLlvm llvm_6
