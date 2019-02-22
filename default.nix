@@ -60,7 +60,10 @@ in
 stdenv.mkDerivation rec {
   name = "ghc-${version}";
   buildInputs = [ env arcanist ]
-                ++ stdenv.lib.optionals stdenv.isDarwin [ libiconv ];
+                ++ stdenv.lib.optionals stdenv.isDarwin
+                     [ libiconv
+                       darwin.libobjc
+                       darwin.apple_sdk.frameworks.Foundation ];
   hardeningDisable = [ "fortify" ];
   phases = ["nobuild"];
   postPatch = "patchShebangs .";
