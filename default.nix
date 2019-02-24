@@ -4,7 +4,11 @@
 #   nix-shell path/to/ghc.nix/        --run 'hadrian/build.sh -c -j4 --flavour=quickest'
 #   nix-shell path/to/ghc.nix/        --run 'THREADS=4 ./validate --slow'
 #
-{ nixpkgs   ? import ./nixpkgs.nix {}
+let
+  fetchNixpkgs = import ./nix/fetch-tarball-with-override.nix "custom_nixpkgs";
+in
+{ nixpkgsPin ? ./nix/pins/nixpkgs.src-json
+, nixpkgs   ? import (fetchNixpkgs nixpkgsPin) {}
 , bootghc   ? "ghc844"
 , version   ? "8.7"
 , useClang  ? false  # use Clang for C compilation
