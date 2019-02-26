@@ -30,6 +30,7 @@ let
     noTest = pkg: haskell.lib.dontCheck pkg;
 
     hspkgs = haskell.packages.${bootghc};
+    ghc    = haskell.compiler.${bootghc};
 
     ourtexlive =
       nixpkgs.texlive.combine {
@@ -37,39 +38,46 @@ let
     fonts = nixpkgs.makeFontsConf { fontDirectories = [ nixpkgs.dejavu_fonts ]; };
     docsPackages = if withDocs then [ python3Packages.sphinx ourtexlive ] else [];
 
-    deps =
+    depsSystem = with stdenv.lib; (
       [ autoconf automake m4
         gmp.dev gmp.out glibcLocales
         ncurses.dev ncurses.out
         perl git file which python3
-        (hspkgs.ghcWithPackages (ps: [ ps.alex ps.happy ]))
         xlibs.lndir  # for source distribution generation
-        cabal-install
         zlib.out
         zlib.dev
       ]
       ++ docsPackages
-      ++ stdenv.lib.optional withLlvm llvm_6
-      ++ stdenv.lib.optional withNuma numactl
-      ++ stdenv.lib.optional withDwarf elfutils
-      ++ stdenv.lib.optional (! stdenv.isDarwin) pxz ;
+      ++ optional  withLlvm            llvm_6
+      ++ optional  withNuma            numactl
+      ++ optional  withDwarf           elfutils
+      ++ optional  (! stdenv.isDarwin) pxz
+      ++ optionals stdenv.isDarwin     [ libiconv
+                                         darwin.libobjc
+                                         darwin.apple_sdk.frameworks.Foundation ]
+    );
 
-    env = buildEnv {
-      name = "ghc-build-environment";
-      paths = deps;
-    };
+    depsHaskell = with hspkgs; [
+      alex
+      cabal-install
+      happy
+    ];
 
+    env = ghc;
+
+    hsdrv = (hspkgs.mkDerivation rec {
+      inherit version;
+      pname   = "ghc-buildenv";
+      license = "BSD";
+
+      libraryHaskellDepends = depsHaskell;
+    });
 in
+(hspkgs.shellFor rec {
+  packages    = pkgset: [ hsdrv ];
+  buildInputs = depsSystem;
 
-stdenv.mkDerivation rec {
-  name = "ghc-${version}";
-  buildInputs = [ env ]
-                ++ stdenv.lib.optionals stdenv.isDarwin
-                     [ libiconv
-                       darwin.libobjc
-                       darwin.apple_sdk.frameworks.Foundation ];
   hardeningDisable = [ "fortify" ];
-  phases = ["nobuild"];
   postPatch = "patchShebangs .";
   preConfigure = ''
     echo Running preConfigure...
@@ -128,7 +136,4 @@ stdenv.mkDerivation rec {
   # The solution is from: https://github.com/NixOS/nix/issues/318#issuecomment-52986702
   LOCALE_ARCHIVE = if stdenv.isLinux then "${glibcLocales}/lib/locale/locale-archive" else "";
 
-  nobuild = ''
-    echo Do not run this derivation with nix-build, it can only be used with nix-shell
-  '';
-}
+})
