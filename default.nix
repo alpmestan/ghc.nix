@@ -92,7 +92,6 @@ in
   # In particular, this makes many tests fail because those warnings show up in test outputs too...
   # The solution is from: https://github.com/NixOS/nix/issues/318#issuecomment-52986702
   LOCALE_ARCHIVE      = if stdenv.isLinux then "${glibcLocales}/lib/locale/locale-archive" else "";
-  NIX_BUILD_CORES     = cores;
 
   shellHook           = let toYesNo = b: if b then "YES" else "NO"; in ''
     # somehow, CC gets overriden so we set it again here.
