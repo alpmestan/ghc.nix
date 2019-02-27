@@ -47,7 +47,7 @@ let
         zlib.dev
       ]
       ++ docsPackages
-      ++ optional  withLlvm            llvm_6
+      ++ optional  withLlvm            llvm_7
       ++ optional  withNuma            numactl
       ++ optional  withDwarf           elfutils
       ++ optional  (! stdenv.isDarwin) pxz
