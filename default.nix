@@ -86,6 +86,7 @@ in
   CURSES_LIB_DIRS     = "${env}/lib"                 ;
   GMP_INCLUDE_DIRS    = "${env}/include"             ;
   GMP_LIB_DIRS        = "${env}/lib"                 ;
+  hardeningDisable    = ["fortify"]                  ; ## Effectuated by cc-wrapper
   LDFLAGS             = "-L${env}/lib"               ;
   LD_LIBRARY_PATH     = "${env}/lib"                 ;
   # Without this, we see a whole bunch of warnings about LANG, LC_ALL and locales in general.
