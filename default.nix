@@ -11,6 +11,7 @@ in
 , nixpkgs   ? import (fetchNixpkgs nixpkgsPin) {}
 , bootghc   ? "ghc844"
 , version   ? "8.7"
+, hadrianCabal ? ./hadrian/hadrian.cabal
 , useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
 , withDocs  ? true
@@ -59,22 +60,27 @@ let
           ])
     );
 
-    depsHaskell = with hspkgs; [
-      alex
-      cabal-install
-      happy
-      unordered-containers
-    ];
-
     env = ghc;
 
-    hsdrv = (hspkgs.mkDerivation rec {
-      inherit version;
-      pname   = "ghc-buildenv";
-      license = "BSD";
+    hadrianCabalExists = builtins.pathExists hadrianCabal;
+    hsdrv = if (builtins.trace "checking if ${toString hadrianCabal} is present:  ${if hadrianCabalExists then "yes" else "no"}"
+                hadrianCabalExists)
+            then hspkgs.callCabal2nix "hadrian" hadrianCabal {}
+            else (hspkgs.mkDerivation rec {
+              inherit version;
+              pname   = "ghc-buildenv";
+              license = "BSD";
 
-      libraryHaskellDepends = depsHaskell;
-    });
+              libraryHaskellDepends = with hspkgs; [
+                extra
+                QuickCheck
+                shake
+                unordered-containers
+              ];
+              executableToolDepends  = with hspkgs; [
+                alex cabal-install happy
+              ];
+            });
 in
 (hspkgs.shellFor rec {
   packages    = pkgset: [ hsdrv ];
