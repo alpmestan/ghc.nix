@@ -61,6 +61,7 @@ let
       alex
       cabal-install
       happy
+      unordered-containers
     ];
 
     env = ghc;
