@@ -47,13 +47,16 @@ let
         zlib.dev
       ]
       ++ docsPackages
-      ++ optional  withLlvm            llvm_7
-      ++ optional  withNuma            numactl
-      ++ optional  withDwarf           elfutils
-      ++ optional  (! stdenv.isDarwin) pxz
-      ++ optionals stdenv.isDarwin     [ libiconv
-                                         darwin.libobjc
-                                         darwin.apple_sdk.frameworks.Foundation ]
+      ++ optional withLlvm llvm_7
+      ++ optional withNuma numactl
+      ++ optional withDwarf elfutils
+      ++ (if (! stdenv.isDarwin)
+          then [ pxz ]
+          else [
+            libiconv
+            darwin.libobjc
+            darwin.apple_sdk.frameworks.Foundation
+          ])
     );
 
     depsHaskell = with hspkgs; [
