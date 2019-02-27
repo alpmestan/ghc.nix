@@ -59,7 +59,7 @@ in
 
 stdenv.mkDerivation rec {
   name = "ghc-${version}";
-  buildInputs = [ env arcanist ]
+  buildInputs = [ env ]
                 ++ stdenv.lib.optionals stdenv.isDarwin
                      [ libiconv
                        darwin.libobjc
