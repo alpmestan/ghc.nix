@@ -60,8 +60,6 @@ let
           ])
     );
 
-    env = ghc;
-
     hadrianCabalExists = builtins.pathExists hadrianCabal;
     hsdrv = if (builtins.trace "checking if ${toString hadrianCabal} is present:  ${if hadrianCabalExists then "yes" else "no"}"
                 hadrianCabalExists)
@@ -70,6 +68,7 @@ let
               inherit version;
               pname   = "ghc-buildenv";
               license = "BSD";
+              src = builtins.filterSource (_: _: false) ./.;
 
               libraryHaskellDepends = with hspkgs; [
                 extra
@@ -80,24 +79,13 @@ let
               executableToolDepends  = with hspkgs; [
                 alex cabal-install happy
               ];
+              librarySystemDepends = depsSystem;
             });
 in
 (hspkgs.shellFor rec {
   packages    = pkgset: [ hsdrv ];
-  buildInputs = depsSystem;
 
-  # N.B. CC gets overridden by stdenv
-  CC                  = "${stdenv.cc}/bin/cc"        ;
-  CC_STAGE0           = CC                           ;
-  CFLAGS              = "-I${env}/include"           ;
-  CPPFLAGS            = "-I${env}/include"           ;
-  CURSES_INCLUDE_DIRS = "${env}/include"             ;
-  CURSES_LIB_DIRS     = "${env}/lib"                 ;
-  GMP_INCLUDE_DIRS    = "${env}/include"             ;
-  GMP_LIB_DIRS        = "${env}/lib"                 ;
   hardeningDisable    = ["fortify"]                  ; ## Effectuated by cc-wrapper
-  LDFLAGS             = "-L${env}/lib"               ;
-  LD_LIBRARY_PATH     = "${env}/lib"                 ;
   # Without this, we see a whole bunch of warnings about LANG, LC_ALL and locales in general.
   # In particular, this makes many tests fail because those warnings show up in test outputs too...
   # The solution is from: https://github.com/NixOS/nix/issues/318#issuecomment-52986702
@@ -112,18 +100,7 @@ in
 
     ${lib.optionalString withDocs "export FONTCONFIG_FILE=${fonts}"}
 
-    echo Entering a GHC development shell with CFLAGS, CPPFLAGS, LDFLAGS and
-    echo LD_LIBRARY_PATH correctly set, to be picked up by ./configure.
-    echo
-    echo "    CC              = $CC"
-    echo "    CC_STAGE0       = $CC_STAGE0"
-    echo "    CFLAGS          = $CFLAGS"
-    echo "    CPPFLAGS        = $CPPFLAGS"
-    echo "    LDFLAGS         = $LDFLAGS"
-    echo "    LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
-    echo "    LLVM            = ${toYesNo withLlvm}"
-    echo "    libdw           = ${toYesNo withDwarf}"
-    echo "    numa            = ${toYesNo withNuma}"
+    echo Entering a GHC development shell.
     echo
     echo Please report bugs, problems or contributions to
     echo https://github.com/alpmestan/ghc.nix
