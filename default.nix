@@ -59,6 +59,7 @@ let
             darwin.apple_sdk.frameworks.Foundation
           ])
     );
+    depsTools = with hspkgs; [ alex cabal-install happy ];
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;
     hsdrv = if (builtins.trace "checking if ${toString hadrianCabal} is present:  ${if hadrianCabalExists then "yes" else "no"}"
@@ -76,14 +77,12 @@ let
                 shake
                 unordered-containers
               ];
-              executableToolDepends  = with hspkgs; [
-                alex cabal-install happy
-              ];
               librarySystemDepends = depsSystem;
             });
 in
 (hspkgs.shellFor rec {
   packages    = pkgset: [ hsdrv ];
+  buildInputs = depsSystem ++ depsTools;
 
   hardeningDisable    = ["fortify"]                  ; ## Effectuated by cc-wrapper
   # Without this, we see a whole bunch of warnings about LANG, LC_ALL and locales in general.
