@@ -11,7 +11,7 @@ in
 , nixpkgs   ? import (fetchNixpkgs nixpkgsPin) {}
 , bootghc   ? "ghc844"
 , version   ? "8.7"
-, hadrianCabal ? ./hadrian/hadrian.cabal
+, hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
 , useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
 , withDocs  ? true
