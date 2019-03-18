@@ -4,7 +4,7 @@
 #   nix-shell path/to/ghc.nix/        --run 'hadrian/build.sh -c -j4 --flavour=quickest'
 #   nix-shell path/to/ghc.nix/        --run 'THREADS=4 ./validate --slow'
 #
-{ nixpkgs   ? import <nixpkgs> {}
+{ nixpkgs   ? import ./nixpkgs.nix {}
 , bootghc   ? "ghc844"
 , version   ? "8.7"
 , useClang  ? false  # use Clang for C compilation
