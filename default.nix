@@ -15,6 +15,7 @@ in
 , useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
 , withDocs  ? true
+, withHadrianDeps ? false
 , withDwarf ? nixpkgs.stdenv.isLinux  # enable libdw unwinding support
 , withNuma  ? nixpkgs.stdenv.isLinux
 , cores     ? 4
@@ -62,7 +63,8 @@ let
     depsTools = with hspkgs; [ alex cabal-install happy ];
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;
-    hsdrv = if (builtins.trace "checking if ${toString hadrianCabal} is present:  ${if hadrianCabalExists then "yes" else "no"}"
+    hsdrv = if (withHadrianDeps &&
+                builtins.trace "checking if ${toString hadrianCabal} is present:  ${if hadrianCabalExists then "yes" else "no"}"
                 hadrianCabalExists)
             then hspkgs.callCabal2nix "hadrian" hadrianCabal {}
             else (hspkgs.mkDerivation rec {
@@ -71,7 +73,7 @@ let
               license = "BSD";
               src = builtins.filterSource (_: _: false) ./.;
 
-              libraryHaskellDepends = with hspkgs; [
+              libraryHaskellDepends = with hspkgs; lib.optionals withHadrianDeps [
                 extra
                 QuickCheck
                 shake
