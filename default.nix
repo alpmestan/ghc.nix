@@ -7,8 +7,9 @@
 let
   fetchNixpkgs = import ./nix/fetch-tarball-with-override.nix "custom_nixpkgs";
 in
-{ nixpkgsPin ? ./nix/pins/nixpkgs.src-json
-, nixpkgs   ? import (fetchNixpkgs nixpkgsPin) {}
+{ nixpkgsFun ? import (fetchNixpkgs nixpkgsPin)
+, crossSystem ? null
+, nixpkgs   ? nixpkgsFun { inherit crossSystem; }
 , bootghc   ? "ghc844"
 , version   ? "8.7"
 , hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
@@ -16,12 +17,13 @@ in
 , withLlvm  ? false
 , withDocs  ? true
 , withHadrianDeps ? false
-, withDwarf ? nixpkgs.stdenv.isLinux  # enable libdw unwinding support
-, withNuma  ? nixpkgs.stdenv.isLinux
+, withDwarf ? nixpkgs.stdenv.hostPlatform.isLinux  # enable libdw unwinding support
+, withNuma  ? nixpkgs.stdenv.hostPlatform.isLinux
 , cores     ? 4
 }:
 
-with nixpkgs;
+# build = host =?= target
+with nixpkgs.buildPackages;
 
 let
     stdenv =
@@ -39,7 +41,7 @@ let
     fonts = nixpkgs.makeFontsConf { fontDirectories = [ nixpkgs.dejavu_fonts ]; };
     docsPackages = if withDocs then [ python3Packages.sphinx ourtexlive ] else [];
 
-    depsSystem = with stdenv.lib; (
+    depsSystemForHost = with stdenv.lib; (
       [ autoconf automake m4
         gmp.dev gmp.out glibcLocales
         ncurses.dev ncurses.out
@@ -61,6 +63,15 @@ let
           ])
     );
     depsTools = with hspkgs; [ alex cabal-install happy ];
+
+    depsSystemForTarget = with stdenv.lib; with targetPackages;
+      [ gmp.dev gmp.out glibcLocales
+        ncurses.dev ncurses.out
+        zlib.out
+        zlib.dev
+      ]
+      ++ optional withNuma targetPackages.numactl
+      ;
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;
     hsdrv = if (withHadrianDeps &&
@@ -84,7 +95,7 @@ let
 in
 (hspkgs.shellFor rec {
   packages    = pkgset: [ hsdrv ];
-  buildInputs = depsSystem ++ depsTools;
+  buildInputs = depsSystem ++ depsSystemForTarget ++ depsTools;
 
   hardeningDisable    = ["fortify"]                  ; ## Effectuated by cc-wrapper
   # Without this, we see a whole bunch of warnings about LANG, LC_ALL and locales in general.
