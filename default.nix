@@ -40,11 +40,7 @@ let
       else nixpkgs.stdenv;
     noTest = pkg: haskell.lib.dontCheck pkg;
 
-    hspkgs = haskell.packages.${bootghc}.override{
-      overrides = self: _: {
-        happy = self.callHackage "happy" "1.19.10" {};
-      };
-    };
+    hspkgs = haskell.packages.${bootghc};
     ghc    = haskell.compiler.${bootghc};
 
     ourtexlive =
@@ -74,6 +70,7 @@ let
             darwin.apple_sdk.frameworks.Foundation
           ])
     );
+    happy = hspkgs.callHackage "happy" "1.19.10" {};
     depsTools = with hspkgs; [ alex cabal-install happy ];
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;
@@ -98,7 +95,8 @@ let
 in
 (hspkgs.shellFor rec {
   packages    = pkgset: [ hsdrv ];
-  buildInputs = depsSystem ++ depsTools;
+  nativeBuildInputs = depsTools;
+  buildInputs = depsSystem;
 
   hardeningDisable    = ["fortify"]                  ; ## Effectuated by cc-wrapper
   # Without this, we see a whole bunch of warnings about LANG, LC_ALL and locales in general.
@@ -109,6 +107,7 @@ in
   shellHook           = let toYesNo = b: if b then "YES" else "NO"; in ''
     # somehow, CC gets overriden so we set it again here.
     export CC=${stdenv.cc}/bin/cc
+    export PATH=${happy}/bin:$PATH
 
     # "nix-shell --pure" resets LANG to POSIX, this breaks "make TAGS".
     export LANG="en_US.UTF-8"
