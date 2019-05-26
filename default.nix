@@ -70,7 +70,7 @@ let
             darwin.apple_sdk.frameworks.Foundation
           ])
     );
-    happy = hspkgs.callHackage "happy" "1.19.10" {};
+    happy = noTest (hspkgs.callHackage "happy" "1.19.10" {});
     depsTools = with hspkgs; [ alex cabal-install happy ];
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;
