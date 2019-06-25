@@ -8,19 +8,9 @@ let
   fetchNixpkgs = import ./nix/fetch-tarball-with-override.nix "custom_nixpkgs";
 in
 { nixpkgsPin ? ./nix/pins/nixpkgs.src-json
-, nixpkgs   ? import (fetchNixpkgs nixpkgsPin) {
-    overlays = [
-      (self: super: {
-        # 2019-05-16
-        all-cabal-hashes = self.fetchurl {
-          url = "https://github.com/commercialhaskell/all-cabal-hashes/archive/020e73fee8d93d27b1ef73cf1c1c4749f844bc0e.tar.gz";
-          sha256 = "0srqg0iwf6pgihydd12a93wfrnb1sgy7rhy4smwa4z7lpxb39sjg";
-        };
-      })
-    ];
-  }
-, bootghc   ? "ghc844"
-, version   ? "8.7"
+, nixpkgs   ? import (fetchNixpkgs nixpkgsPin) {}
+, bootghc   ? "ghc864"
+, version   ? "8.9"
 , hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
 , useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
