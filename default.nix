@@ -104,10 +104,5 @@ in
     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${gmp.out}/lib:${ncurses.out}/lib"
 
     ${lib.optionalString withDocs "export FONTCONFIG_FILE=${fonts}"}
-
-    echo Entering a GHC development shell.
-    echo
-    echo Please report bugs, problems or contributions to
-    echo https://github.com/alpmestan/ghc.nix
   '';
 })
