@@ -39,6 +39,16 @@ $ hadrian/build.sh -j4 --flavour=quickest --build-root=_mybuild
 $ cabal update
 ```
 
+## Using `ghcide`
+
+You can also use `ghc.nix` to provide the right version of `ghcide` if you
+want to use `ghcide` whilst developing on GHC. In order to do so, pass the `withIde`
+argument to your `nix-shell` invocation.
+
+```
+nix-shell ~/.ghc.nix --arg withIde true
+```
+
 ## Running `./validate`
 
 ``` sh

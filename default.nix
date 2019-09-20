@@ -15,6 +15,7 @@ in
 , useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
 , withDocs  ? true
+, withIde   ? false
 , withHadrianDeps ? false
 , withDwarf ? nixpkgs.stdenv.isLinux  # enable libdw unwinding support
 , withNuma  ? nixpkgs.stdenv.isLinux
@@ -31,6 +32,16 @@ let
     noTest = pkg: haskell.lib.dontCheck pkg;
 
     hspkgs = haskell.packages.${bootghc};
+
+    ghcide-src = fetchFromGitHub {
+      owner = "hercules-ci";
+      repo = "ghcide-nix";
+      rev = "3156336ec3caf2f5f4bf1549a058800821f98c96";
+      sha256 = "1x06fvb987i8y9g3x96p20knr69hivkk80fdbn1rrnc22jki8wh0";
+    };
+
+    ghcide = (import ghcide-src {})."ghcide-${bootghc}";
+
     ghc    = haskell.compiler.${bootghc};
 
     ourtexlive =
@@ -52,6 +63,7 @@ let
       ++ optional withLlvm llvm_7
       ++ optional withNuma numactl
       ++ optional withDwarf elfutils
+      ++ optional withIde ghcide
       ++ (if (! stdenv.isDarwin)
           then [ pxz ]
           else [
