@@ -6,6 +6,7 @@
 #
 let
   fetchNixpkgs = import ./nix/fetch-tarball-with-override.nix "custom_nixpkgs";
+  fetchGhcIde  = import ./nix/fetch-tarball-with-override.nix "ghcide";
 in
 { nixpkgsPin ? ./nix/pins/nixpkgs.src-json
 , nixpkgs   ? import (fetchNixpkgs nixpkgsPin) {}
@@ -33,12 +34,7 @@ let
 
     hspkgs = haskell.packages.${bootghc};
 
-    ghcide-src = fetchFromGitHub {
-      owner = "hercules-ci";
-      repo = "ghcide-nix";
-      rev = "3156336ec3caf2f5f4bf1549a058800821f98c96";
-      sha256 = "1x06fvb987i8y9g3x96p20knr69hivkk80fdbn1rrnc22jki8wh0";
-    };
+    ghcide-src = fetchGhcIde ./nix/pins/ghcide-nix.src-json ;
 
     ghcide = (import ghcide-src {})."ghcide-${bootghc}";
 
@@ -72,7 +68,7 @@ let
             darwin.apple_sdk.frameworks.Foundation
           ])
     );
-    happy = noTest (hspkgs.callHackage "happy" "1.19.10" {});
+    happy = hspkgs.happy;
     depsTools = with hspkgs; [ alex cabal-install happy ];
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;

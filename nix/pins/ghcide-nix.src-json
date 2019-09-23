@@ -1,0 +1,7 @@
+{
+  "url": "https://github.com/hercules-ci/ghcide-nix",
+  "rev": "fd42f62613d491565c1676821148c008b2011584",
+  "date": "2019-06-20T15:28:04-04:00",
+  "sha256": "1cd60hlr58ih5j21a64rdrmyrh28dhwz0wgmkb3p3j8jmrya8fv7",
+  "fetchSubmodules": false
+}
