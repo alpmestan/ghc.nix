@@ -20,6 +20,7 @@ in
 , withHadrianDeps ? false
 , withDwarf ? nixpkgs.stdenv.isLinux  # enable libdw unwinding support
 , withNuma  ? nixpkgs.stdenv.isLinux
+, withGrind ? true
 , cores     ? 4
 }:
 
@@ -57,6 +58,7 @@ let
       ]
       ++ docsPackages
       ++ optional withLlvm llvm_7
+      ++ optional withGrind valgrind
       ++ optional withNuma numactl
       ++ optional withDwarf elfutils
       ++ optional withIde ghcide
