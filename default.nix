@@ -9,7 +9,7 @@ let
 in
 { nixpkgsPin ? ./nix/pins/nixpkgs.src-json
 , nixpkgs   ? import (fetchNixpkgs nixpkgsPin) {}
-, bootghc   ? "ghc864"
+, bootghc   ? "ghc865"
 , version   ? "8.9"
 , hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
 , useClang  ? false  # use Clang for C compilation
