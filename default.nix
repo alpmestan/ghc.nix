@@ -18,8 +18,9 @@ in
 , withDocs  ? true
 , withIde   ? false
 , withHadrianDeps ? false
-, withDwarf ? nixpkgs.stdenv.isLinux  # enable libdw unwinding support
-, withNuma  ? nixpkgs.stdenv.isLinux
+, withDwarf  ? nixpkgs.stdenv.isLinux  # enable libdw unwinding support
+, withNuma   ? nixpkgs.stdenv.isLinux
+, withDtrace ? nixpkgs.stdenv.isLinux
 , withGrind ? true
 , cores     ? 4
 }:
@@ -65,6 +66,7 @@ let
       ++ optional withNuma numactl
       ++ optional withDwarf elfutils
       ++ optional withIde ghcide
+      ++ optional withDtrace linuxPackages.systemtap
       ++ (if (! stdenv.isDarwin)
           then [ pxz ]
           else [
