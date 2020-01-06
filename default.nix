@@ -18,8 +18,9 @@ in
 , withDocs  ? true
 , withIde   ? false
 , withHadrianDeps ? false
-, withDwarf ? nixpkgs.stdenv.isLinux  # enable libdw unwinding support
-, withNuma  ? nixpkgs.stdenv.isLinux
+, withDwarf  ? nixpkgs.stdenv.isLinux  # enable libdw unwinding support
+, withNuma   ? nixpkgs.stdenv.isLinux
+, withDtrace ? nixpkgs.stdenv.isLinux
 , withGrind ? true
 , cores     ? 4
 }:
@@ -43,7 +44,10 @@ let
 
     ourtexlive =
       nixpkgs.texlive.combine {
-        inherit (nixpkgs.texlive) scheme-small collection-xetex fncychap titlesec tabulary varwidth framed capt-of wrapfig needspace dejavu-otf helvetic; };
+        inherit (nixpkgs.texlive)
+          scheme-medium collection-xetex fncychap titlesec tabulary varwidth
+          framed capt-of wrapfig needspace dejavu-otf helvetic upquote;
+      };
     fonts = nixpkgs.makeFontsConf { fontDirectories = [ nixpkgs.dejavu_fonts ]; };
     docsPackages = if withDocs then [ python3Packages.sphinx ourtexlive ] else [];
 
@@ -62,6 +66,7 @@ let
       ++ optional withNuma numactl
       ++ optional withDwarf elfutils
       ++ optional withIde ghcide
+      ++ optional withDtrace linuxPackages.systemtap
       ++ (if (! stdenv.isDarwin)
           then [ pxz ]
           else [
@@ -111,7 +116,7 @@ in
 
     # "nix-shell --pure" resets LANG to POSIX, this breaks "make TAGS".
     export LANG="en_US.UTF-8"
-    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${gmp.out}/lib:${ncurses.out}/lib"
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${lib.makeLibraryPath depsSystem}"
 
     ${lib.optionalString withDocs "export FONTCONFIG_FILE=${fonts}"}
   '';
