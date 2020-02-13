@@ -16,6 +16,7 @@ in
 , useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
 , withDocs  ? true
+, withGhcid ? false
 , withIde   ? false
 , withHadrianDeps ? false
 , withDwarf  ? nixpkgs.stdenv.isLinux  # enable libdw unwinding support
@@ -65,6 +66,7 @@ let
       ++ optional withGrind valgrind
       ++ optional withNuma numactl
       ++ optional withDwarf elfutils
+      ++ optional withGhcid ghcid
       ++ optional withIde ghcide
       ++ optional withDtrace linuxPackages.systemtap
       ++ (if (! stdenv.isDarwin)
