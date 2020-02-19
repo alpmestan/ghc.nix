@@ -28,6 +28,8 @@ in
 with nixpkgs;
 
 let
+    llvmForGhc = llvm_7;
+
     stdenv =
       if useClang
       then nixpkgs.clangStdenv
@@ -61,7 +63,7 @@ let
         zlib.dev
       ]
       ++ docsPackages
-      ++ optional withLlvm llvm_7
+      ++ optional withLlvm llvmForGhc
       ++ optional withGrind valgrind
       ++ optional withNuma numactl
       ++ optional withDwarf elfutils
@@ -75,7 +77,6 @@ let
             darwin.apple_sdk.frameworks.Foundation
           ])
     );
-    happy = hspkgs.happy;
     depsTools = with hspkgs; [ alex cabal-install happy ];
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;
@@ -122,7 +123,10 @@ in
   shellHook           = let toYesNo = b: if b then "YES" else "NO"; in ''
     # somehow, CC gets overriden so we set it again here.
     export CC=${stdenv.cc}/bin/cc
-    export PATH=${happy}/bin:$PATH
+    export HAPPY=${hspkgs.happy}/bin/happy
+    export ALEX=${hspkgs.alex}/bin/alex
+    ${lib.optionalString withLlvm "export LLC=${llvmForGhc}/bin/llc"}
+    ${lib.optionalString withLlvm "export OPT=${llvmForGhc}/bin/opt"}
 
     # "nix-shell --pure" resets LANG to POSIX, this breaks "make TAGS".
     export LANG="en_US.UTF-8"
