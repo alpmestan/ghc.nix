@@ -134,7 +134,11 @@ in
 
     ${lib.optionalString withDocs "export FONTCONFIG_FILE=${fonts}"}
 
-    echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS):"
+    # A convenient shortcut
+    configure_ghc() { ./configure $CONFIGURE_ARGS $@; }
+
+    echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS:"
+    echo "or use the configure_ghc command):"
     echo ""
     echo "  ${lib.concatStringsSep "\n  " CONFIGURE_ARGS}"
   '';

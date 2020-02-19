@@ -26,7 +26,9 @@ $ nix-shell ~/ghc.nix/ --run './boot && ./configure $CONFIGURE_ARGS && make -j4'
 Note that we passed `$CONFIGURE_ARGS` to `./configure`. While this is
 technically optional, this argument ensures that `configure` knows where the
 compiler's dependencies (e.g. `gmp`, `libnuma`, `libdw`) are found, allowing
-the compiler to be used even outsite of `nix-shell`.
+the compiler to be used even outsite of `nix-shell`. For convenience, the
+`nix-shell` environment also exports a convenience command, `configure_ghc`,
+which invokes `configure` as indicated.
 
 You can alternatively use Hadrian to build GHC:
 
