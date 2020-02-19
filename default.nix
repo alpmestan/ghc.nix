@@ -108,6 +108,16 @@ in
   # In particular, this makes many tests fail because those warnings show up in test outputs too...
   # The solution is from: https://github.com/NixOS/nix/issues/318#issuecomment-52986702
   LOCALE_ARCHIVE      = if stdenv.isLinux then "${glibcLocales}/lib/locale/locale-archive" else "";
+  CONFIGURE_ARGS      = [ "--with-gmp-includes=${gmp.dev}/include"
+                          "--with-gmp-libraries=${gmp}/lib"
+                        ] ++ lib.optionals withNuma [
+                          "--with-libnuma-includes=${numactl}/include"
+                          "--with-libnuma-libraries=${numactl}/lib"
+                        ] ++ lib.optionals withDwarf [
+                          "--with-libdw-includes=${elfutils}/include"
+                          "--with-libdw-libraries=${elfutils}/lib"
+                          "--enable-dwarf-unwind"
+                        ];
 
   shellHook           = let toYesNo = b: if b then "YES" else "NO"; in ''
     # somehow, CC gets overriden so we set it again here.
@@ -119,5 +129,9 @@ in
     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${lib.makeLibraryPath depsSystem}"
 
     ${lib.optionalString withDocs "export FONTCONFIG_FILE=${fonts}"}
+
+    echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS):"
+    echo ""
+    echo "  ${lib.concatStringsSep "\n  " CONFIGURE_ARGS}"
   '';
 })
