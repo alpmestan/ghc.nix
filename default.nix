@@ -119,6 +119,7 @@ in
     # "nix-shell --pure" resets LANG to POSIX, this breaks "make TAGS".
     export LANG="en_US.UTF-8"
     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${lib.makeLibraryPath depsSystem}"
+    unset LD
 
     ${lib.optionalString withDocs "export FONTCONFIG_FILE=${fonts}"}
   '';
