@@ -19,16 +19,23 @@ for more details.
 
 ``` sh
 $ sed -e '/BuildFlavour = quickest/ s/^#//' mk/build.mk.sample > mk/build.mk
-$ nix-shell ~/ghc.nix/ --run './boot && ./configure && make -j4'
+$ nix-shell ~/ghc.nix/ --run './boot && ./configure $CONFIGURE_ARGS && make -j4'
 # works with --pure too
 ```
+
+Note that we passed `$CONFIGURE_ARGS` to `./configure`. While this is
+technically optional, this argument ensures that `configure` knows where the
+compiler's dependencies (e.g. `gmp`, `libnuma`, `libdw`) are found, allowing
+the compiler to be used even outsite of `nix-shell`. For convenience, the
+`nix-shell` environment also exports a convenience command, `configure_ghc`,
+which invokes `configure` as indicated.
 
 You can alternatively use Hadrian to build GHC:
 
 ``` sh
 $ nix-shell ~/ghc.nix/
 # from the nix shell:
-$ ./boot && ./configure
+$ ./boot && ./configure $CONFIGURE_ARGS
 # example hadrian command: use 4 cores, build a 'quickest' flavoured GHC
 # and place all the build artifacts under ./_mybuild/.
 $ hadrian/build.sh -j4 --flavour=quickest --build-root=_mybuild
@@ -38,6 +45,7 @@ $ hadrian/build.sh -j4 --flavour=quickest --build-root=_mybuild
 # need to run the following before the hadrian command:
 $ cabal update
 ```
+
 
 ## Using `ghcide`
 
