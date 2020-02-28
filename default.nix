@@ -55,7 +55,7 @@ let
     docsPackages = if withDocs then [ python3Packages.sphinx ourtexlive ] else [];
 
     depsSystem = with stdenv.lib; (
-      [ autoconf automake m4
+      [ autoconf automake m4 less
         gmp.dev gmp.out glibcLocales
         ncurses.dev ncurses.out
         perl git file which python3
