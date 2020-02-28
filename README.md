@@ -18,7 +18,8 @@ for more details.
 
 
 ``` sh
-$ sed -e '/BuildFlavour = quickest/ s/^#//' mk/build.mk.sample > mk/build.mk
+$ cp mk/build.mk.sample mk/build.mk
+$ echo "BuildFlavor = quick" >> mk/build.mk
 $ nix-shell ~/ghc.nix/ --run './boot && ./configure $CONFIGURE_ARGS && make -j4'
 # works with --pure too
 ```
