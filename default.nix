@@ -69,7 +69,7 @@ let
       ++ optional withNuma numactl
       ++ optional withDwarf elfutils
       ++ optional withGhcid ghcid
-      ++ optional withIde ghcide
+      ++ optionals withIde [ghcide ccls bear]
       ++ optional withDtrace linuxPackages.systemtap
       ++ (if (! stdenv.isDarwin)
           then [ pxz ]
