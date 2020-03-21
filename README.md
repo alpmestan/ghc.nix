@@ -18,8 +18,8 @@ for more details.
 
 
 ``` sh
-$ cp mk/build.mk.sample mk/build.mk
-$ echo "BuildFlavor = quick" >> mk/build.mk
+$ echo "BuildFlavour = quick" > mk/build.mk
+$ cat mk/build.mk.sample >> mk/build.mk
 $ nix-shell ~/ghc.nix/ --run './boot && ./configure $CONFIGURE_ARGS && make -j4'
 # works with --pure too
 ```
