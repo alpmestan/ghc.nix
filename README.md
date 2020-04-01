@@ -48,8 +48,9 @@ $ cabal update
 ```
 
 
-## Using `ghcide`
+## Using `ghcide` (⚠️ currently unavailable)
 
+<del>
 You can also use `ghc.nix` to provide the right version of `ghcide` if you
 want to use `ghcide` whilst developing on GHC. In order to do so, pass the `withIde`
 argument to your `nix-shell` invocation.
@@ -57,6 +58,12 @@ argument to your `nix-shell` invocation.
 ```
 nix-shell ~/.ghc.nix --arg withIde true
 ```
+</del>
+GHCIDE support is currently unavailable for GHC > 8.8.
+
+See:
+- https://github.com/cachix/ghcide-nix/issues/3
+- https://github.com/alpmestan/ghc.nix/issues/64
 
 ## Running `./validate`
 
