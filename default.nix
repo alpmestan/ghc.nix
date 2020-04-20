@@ -1,7 +1,7 @@
 # Usage examples:
 #
 #   nix-shell path/to/ghc.nix/ --pure --run './boot && ./configure && make -j4'
-#   nix-shell path/to/ghc.nix/        --run 'hadrian/build.sh -c -j4 --flavour=quickest'
+#   nix-shell path/to/ghc.nix/        --run 'hadrian/build -c -j4 --flavour=quickest'
 #   nix-shell path/to/ghc.nix/        --run 'THREADS=4 ./validate --slow'
 #
 let
