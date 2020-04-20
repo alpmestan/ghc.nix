@@ -39,7 +39,7 @@ $ nix-shell ~/ghc.nix/
 $ ./boot && ./configure $CONFIGURE_ARGS
 # example hadrian command: use 4 cores, build a 'quickest' flavoured GHC
 # and place all the build artifacts under ./_mybuild/.
-$ hadrian/build.sh -j4 --flavour=quickest --build-root=_mybuild
+$ hadrian/build -j4 --flavour=quickest --build-root=_mybuild
 # you could also ask hadrian to boot and configure for you, with -c
 
 # if you have never used cabal-install on your machine, you will likely
