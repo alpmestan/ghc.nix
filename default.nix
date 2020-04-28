@@ -143,9 +143,9 @@ in
     # A convenient shortcut
     configure_ghc() { ./configure $CONFIGURE_ARGS $@; }
 
-    echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS:"
-    echo "or use the configure_ghc command):"
-    echo ""
-    echo "  ${lib.concatStringsSep "\n  " CONFIGURE_ARGS}"
+    >&2 echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS:"
+    >&2 echo "or use the configure_ghc command):"
+    >&2 echo ""
+    >&2 echo "  ${lib.concatStringsSep "\n  " CONFIGURE_ARGS}"
   '';
 })
