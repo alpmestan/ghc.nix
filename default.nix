@@ -82,7 +82,7 @@ let
             darwin.apple_sdk.frameworks.Foundation
           ])
     );
-    happy = if lib.versionAtLeast version "8.8" then hspkgs.happy else hspkgs.happy_1_19_5
+    happy = if lib.versionAtLeast version "8.8" then hspkgs.happy else hspkgs.happy_1_19_5;
     depsTools = [happy] ++ with hspkgs; [ alex cabal-install ];
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;
