@@ -82,7 +82,8 @@ let
             darwin.apple_sdk.frameworks.Foundation
           ])
     );
-    depsTools = with hspkgs; [ alex cabal-install happy ];
+    happy = if lib.versionAtLeast version "8.8" then hspkgs.happy else hspkgs.happy_1_19_5
+    depsTools = [happy] ++ with hspkgs; [ alex cabal-install ];
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;
     hsdrv = if (withHadrianDeps &&
@@ -128,7 +129,7 @@ in
   shellHook           = let toYesNo = b: if b then "YES" else "NO"; in ''
     # somehow, CC gets overriden so we set it again here.
     export CC=${stdenv.cc}/bin/cc
-    export HAPPY=${hspkgs.happy}/bin/happy
+    export HAPPY=${happy}/bin/happy
     export ALEX=${hspkgs.alex}/bin/alex
     ${lib.optionalString withLlvm "export LLC=${llvmForGhc}/bin/llc"}
     ${lib.optionalString withLlvm "export OPT=${llvmForGhc}/bin/opt"}
