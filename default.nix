@@ -83,7 +83,7 @@ let
           ])
     );
     happy = if lib.versionAtLeast version "8.8" then hspkgs.happy else hspkgs.happy_1_19_5;
-    depsTools = [happy] ++ with hspkgs; [ alex cabal-install ];
+    depsTools = [ happy hspkgs.alex hspkgs.cabal-install ];
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;
     hsdrv = if (withHadrianDeps &&
