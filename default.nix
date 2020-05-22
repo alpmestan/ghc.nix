@@ -143,6 +143,8 @@ in
 
     # A convenient shortcut
     configure_ghc() { ./configure $CONFIGURE_ARGS $@; }
+    
+    validate_ghc() { config_args="$CONFIGURE_ARGS" ./validate $@; }
 
     >&2 echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS:"
     >&2 echo "or use the configure_ghc command):"
