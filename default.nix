@@ -26,7 +26,6 @@ in
 , withNuma   ? nixpkgs.stdenv.isLinux
 , withDtrace ? nixpkgs.stdenv.isLinux
 , withGrind ? true
-, cores     ? 4
 }:
 
 with nixpkgs;
