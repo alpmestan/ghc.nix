@@ -11,7 +11,7 @@ in
 { nixpkgsPin ? ./nix/pins/nixpkgs.src-json
 , nixpkgs   ? import (fetchNixpkgs nixpkgsPin) {}
 , bootghc   ? "ghc882"
-, version   ? "8.9"
+, version   ? "8.11"
 , hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
 , useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
