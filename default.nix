@@ -116,6 +116,7 @@ in
   LOCALE_ARCHIVE      = if stdenv.isLinux then "${glibcLocales}/lib/locale/locale-archive" else "";
   CONFIGURE_ARGS      = [ "--with-gmp-includes=${gmp.dev}/include"
                           "--with-gmp-libraries=${gmp}/lib"
+                          "--with-curses-libraries=${ncurses.out}/lib"
                         ] ++ lib.optionals withNuma [
                           "--with-libnuma-includes=${numactl}/include"
                           "--with-libnuma-libraries=${numactl}/lib"
