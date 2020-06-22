@@ -20,7 +20,7 @@ for more details.
 ``` sh
 $ echo "BuildFlavour = quick" > mk/build.mk
 $ cat mk/build.mk.sample >> mk/build.mk
-$ nix-shell ~/ghc.nix/ --run './boot && ./configure $CONFIGURE_ARGS && make -j4'
+$ nix-shell ~/ghc.nix/ --run 'git submodule update --init && ./boot && ./configure $CONFIGURE_ARGS && make -j4'
 # works with --pure too
 ```
 
