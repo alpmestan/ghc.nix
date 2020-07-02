@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prepare git 
+        run:
+          git config --global url."git://github.com/ghc/packages-".insteadOf     git://github.com/ghc/packages/ 
+          git config --global url."http://github.com/ghc/packages-".insteadOf    http://github.com/ghc/packages/ 
+          git config --global url."https://github.com/ghc/packages-".insteadOf   https://github.com/ghc/packages/ 
+          git config --global url."ssh://git@github.com/ghc/packages-".insteadOf ssh://git@github.com/ghc/packages/ 
+          git config --global url."git@github.com:ghc/packages-".insteadOf       git@github.com:ghc/packages/ 
+
+      - name: Checkout GHC
+        uses: actions/checkout@v2
+        with:
+          repository: ghc/ghc
+          submodules: recursive
+
+      - name: Checkout ghc.nix
+        uses: actions/checkout@v2
+        with:
+          path: ghc.nix
+          
+      - name: Install nix
+        uses: cachix/install-nix-action@v10
+      
+      - name: Run nix-shell 
+        run: nix-shell ghc.nix
