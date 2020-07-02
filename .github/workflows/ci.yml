@@ -11,6 +11,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: cachix/cachix-action@v6
+        with:
+          name: mycache
+          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
+          # Only needed for private caches
+#          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+        
       - name: Prepare git 
         run:
           git config --global url."git://github.com/ghc/packages-".insteadOf     git://github.com/ghc/packages/ &&
