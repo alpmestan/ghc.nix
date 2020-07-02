@@ -33,12 +33,11 @@ jobs:
       - name: Install nix
         uses: cachix/install-nix-action@v10
 
-      - uses: cachix/cachix-action@v6
+      - name: Use cachix
+        uses: cachix/cachix-action@v6
         with:
           name: ghc-nix
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-          # Only needed for private caches
-#          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Run nix-shell - Boot and Configure
         run: nix-shell --pure ghc.nix --command "./boot && configure_ghc"
