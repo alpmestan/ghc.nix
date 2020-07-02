@@ -44,7 +44,7 @@ jobs:
         run: nix-shell --pure ghc.nix --command "./boot && configure_ghc"
 
       - name: Run nix-shell - Build Hadrian
-        run: nix-shell --pure ghc.nix --command "pushd hadrian; cabal new-build -j exe:hadrian; popd"
+        run: nix-shell --pure ghc.nix --command "pushd hadrian; cabal new-build -j all; popd"
 
       - name: Run nix-shell - hadrian/ghci
         run: nix-shell --pure ghc.nix --command "echo :q | hadrian/ghci"
