@@ -46,4 +46,4 @@ jobs:
         run: nix-shell --pure ghc.nix --command "pushd hadrian; cabal new-update; cabal new-build -j all; popd"
 
       - name: Run nix-shell - hadrian/ghci
-        run: nix-shell --pure ghc.nix --command "echo :q | hadrian/ghci"
+        run: nix-shell --pure ghc.nix --command "echo :q | hadrian/ghci | tail -n2 | grep 'Ok,'"
