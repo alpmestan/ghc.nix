@@ -34,7 +34,7 @@ jobs:
         uses: cachix/install-nix-action@v10
       
       - name: Run nix-shell - Boot and Configure
-        run: nix-shell ghc.nix --command "./boot && ./configure_ghc"
+        run: nix-shell ghc.nix --command "./boot && configure_ghc"
 
       - name: Run nix-shell - hadrian/ghci
         run: nix-shell ghc.nix --command "echo :q | hadrian/ghci"
