@@ -37,7 +37,7 @@ jobs:
         run: nix-shell ghc.nix --command "./boot && configure_ghc"
 
       - name: Run nix-shell - Build Hadrian
-        run: nix-shell ghc.nix --command "cabal --project-file=\"$PWD/hadrian/cabal.project\" new-build"
+        run: nix-shell ghc.nix --command "cabal --project-file=\"hadrian/cabal.project\" new-build -j exe:hadrian"
 
       - name: Run nix-shell - hadrian/ghci
         run: nix-shell ghc.nix --command "echo :q | hadrian/ghci"
