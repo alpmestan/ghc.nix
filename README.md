@@ -81,6 +81,16 @@ It's trivial!
 $ nix-shell ~/ghc.nix/ --arg nixpkgs '(import <nixpkgs> {}).pkgsi686Linux'
 ```
 
+## Cachix
+
+There is a Cachix cache ([ghc-nix](https://app.cachix.org/cache/ghc-nix)) which is filled by our CI. To use it, run the following command and follow the instructions:
+
+```sh
+cachix use ghc-nix
+```
+
+The cache contains Linux x64 binaries of all packages that are used during a default build (i.e. a build without any overridden arguments).
+
 ## TODO
 
 - We currently can't just invoke `nix-build` ([#1](https://github.com/alpmestan/ghc.nix/issues/1))
