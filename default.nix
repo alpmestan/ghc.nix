@@ -31,7 +31,7 @@ in
 with nixpkgs;
 
 let
-    llvmForGhc = llvm_7;
+    llvmForGhc = llvm_9;
 
     stdenv =
       if useClang
