@@ -5,11 +5,9 @@
 #   nix-shell path/to/ghc.nix/        --run 'THREADS=4 ./validate --slow'
 #
 let
-  fetchNixpkgs = import ./nix/fetch-tarball-with-override.nix "custom_nixpkgs";
-  fetchGhcIde  = import ./nix/fetch-tarball-with-override.nix "ghcide";
+  sources = import ./nix/sources.nix {};
 in
-{ nixpkgsPin ? ./nix/pins/nixpkgs.src-json
-, nixpkgs   ? import (fetchNixpkgs nixpkgsPin) {}
+{ nixpkgs   ? import (sources.nixpkgs) {}
 , bootghc   ? "ghc883"
 , version   ? "8.11"
 , hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
@@ -17,10 +15,7 @@ in
 , withLlvm  ? false
 , withDocs  ? true
 , withGhcid ? false
-# GHCIDE support on hold as we must use GHC 8.8 minimum for GHC development, and GHCIDE is not yet available for GHC 8.8
-# See https://github.com/cachix/ghcide-nix/issues/3
-# See https://github.com/alpmestan/ghc.nix/issues/64
-# , withIde   ? false
+, withIde   ? false
 , withHadrianDeps ? false
 , withDwarf  ? nixpkgs.stdenv.isLinux  # enable libdw unwinding support
 , withNuma   ? nixpkgs.stdenv.isLinux
@@ -41,9 +36,7 @@ let
 
     hspkgs = haskell.packages.${bootghc};
 
-    ghcide-src = fetchGhcIde ./nix/pins/ghcide-nix.src-json ;
-
-    ghcide = (import ghcide-src {})."ghcide-${bootghc}";
+    ghcide = (import sources.ghcide-nix {})."ghcide-${bootghc}";
 
     ghc    = haskell.compiler.${bootghc};
 
@@ -71,7 +64,7 @@ let
       ++ optional withNuma numactl
       ++ optional withDwarf elfutils
       ++ optional withGhcid ghcid
-      # ++ optionals withIde [ghcide ccls bear]
+      ++ optionals withIde [ghcide]
       ++ optional withDtrace linuxPackages.systemtap
       ++ (if (! stdenv.isDarwin)
           then [ pxz ]
@@ -143,7 +136,7 @@ in
 
     # A convenient shortcut
     configure_ghc() { ./configure $CONFIGURE_ARGS $@; }
-    
+
     validate_ghc() { config_args="$CONFIGURE_ARGS" ./validate $@; }
 
     >&2 echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS:"

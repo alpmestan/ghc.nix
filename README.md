@@ -48,9 +48,8 @@ $ cabal update
 ```
 
 
-## Using `ghcide` (⚠️ currently unavailable)
+## Using `ghcide`
 
-<del>
 You can also use `ghc.nix` to provide the right version of `ghcide` if you
 want to use `ghcide` whilst developing on GHC. In order to do so, pass the `withIde`
 argument to your `nix-shell` invocation.
@@ -58,12 +57,6 @@ argument to your `nix-shell` invocation.
 ```
 nix-shell ~/.ghc.nix --arg withIde true
 ```
-</del>
-GHCIDE support is currently unavailable for GHC > 8.8.
-
-See:
-- https://github.com/cachix/ghcide-nix/issues/3
-- https://github.com/alpmestan/ghc.nix/issues/64
 
 ## Running `./validate`
 
@@ -90,6 +83,29 @@ cachix use ghc-nix
 ```
 
 The cache contains Linux x64 binaries of all packages that are used during a default build (i.e. a build without any overridden arguments).
+
+## Updating `ghc.nix`
+
+We are using [niv](https://github.com/nmattia/niv) for dependency management of `ghc.nix`.
+Our main external dependencies are `nixpkgs` and `ghcide-nix`.
+To update the revisions of those dependencies, you need to run:
+``` sh
+$ niv update
+```
+
+If you want to only update a single dependency, e.g. ghcide, you may run
+``` sh
+$ niv update ghcide-nix
+```
+
+If you need to switch the branch of nixpkgs, you need to run `niv update nixpkgs -b <branch-name>`.
+As an example, assume you want to use the nightly nixpkgs channel, you run:
+
+``` sh
+$ niv update nixpkgs -b nixos-unstable
+```
+
+After a brief wait time, the revision is updated.
 
 ## TODO
 
