@@ -112,5 +112,3 @@ After a brief wait time, the revision is updated.
 - We currently can't just invoke `nix-build` ([#1](https://github.com/alpmestan/ghc.nix/issues/1))
 - We do not support all the cross compilation machinery that
   `head.nix` from nixpkgs supports.
-- Some tests actually break with GHCs built with the first
-  command above.
