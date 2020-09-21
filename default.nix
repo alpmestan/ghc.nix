@@ -34,7 +34,9 @@ let
       else nixpkgs.stdenv;
     noTest = pkg: haskell.lib.dontCheck pkg;
 
-    hspkgs = haskell.packages.${bootghc};
+    hspkgs = haskell.packages.${bootghc}.override {
+      all-cabal-hashes = sources.all-cabal-hashes;
+    };
 
     ghcide = (import sources.ghcide-nix {})."ghcide-${bootghc}";
 
