@@ -34,7 +34,9 @@ let
       else nixpkgs.stdenv;
     noTest = pkg: haskell.lib.dontCheck pkg;
 
-    hspkgs = haskell.packages.${bootghc};
+    hspkgs = haskell.packages.${bootghc}.override {
+      all-cabal-hashes = sources.all-cabal-hashes;
+    };
 
     ghcide = (import sources.ghcide-nix {})."ghcide-${bootghc}";
 
@@ -74,7 +76,10 @@ let
             darwin.apple_sdk.frameworks.Foundation
           ])
     );
-    happy = if lib.versionAtLeast version "8.8" then hspkgs.happy else hspkgs.happy_1_19_5;
+    happy =
+      if lib.versionAtLeast version "8.8"
+      then noTest (hspkgs.callHackage "happy" "1.20.0" {})
+      else hspkgs.happy_1_19_5;
     depsTools = [ happy hspkgs.alex hspkgs.cabal-install ];
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;

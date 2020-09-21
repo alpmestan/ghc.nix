@@ -34,5 +34,17 @@
         "type": "tarball",
         "url": "https://github.com/NixOS/nixpkgs-channels/archive/51d115ac89d676345b05a0694b23bd2691bf708a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "all-cabal-hashes": {
+        "branch": "hackage",
+        "description": "Cabal hashes",
+        "homepage": "https://github.com/commercialhaskell/all-cabal-hashes",
+        "owner": "commercialhaskell",
+        "repo": "all-cabal-hashes",
+        "rev": "14b2377ba47de78bd557e6e2f4f6a277876103a8",
+        "sha256": "1n43d00bsyhhp895w02g6fhngip9f3hnpkz52dc935d3cs896qih",
+        "type": "file",
+        "url": "https://github.com/commercialhaskell/all-cabal-hashes/archive/14b2377ba47de78bd557e6e2f4f6a277876103a8.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }
