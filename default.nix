@@ -9,7 +9,7 @@ let
 in
 { nixpkgs   ? import (sources.nixpkgs) {}
 , bootghc   ? "ghc883"
-, version   ? "8.11"
+, version   ? "9.1"
 , hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
 , useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
@@ -26,7 +26,9 @@ in
 with nixpkgs;
 
 let
-    llvmForGhc = llvm_9;
+    llvmForGhc = if lib.versionAtLeast version "9.1"
+                 then llvm_10
+                 else llvm_9;
 
     stdenv =
       if useClang
