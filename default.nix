@@ -59,6 +59,7 @@ let
         xlibs.lndir  # for source distribution generation
         zlib.out
         zlib.dev
+        hlint
       ]
       ++ docsPackages
       ++ optional withLlvm llvmForGhc
