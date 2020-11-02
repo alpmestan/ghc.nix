@@ -8,7 +8,7 @@ let
   sources = import ./nix/sources.nix {};
 in
 { nixpkgs   ? import (sources.nixpkgs) {}
-, bootghc   ? "ghc883"
+, bootghc   ? "ghc884"
 , version   ? "9.1"
 , hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
 , useClang  ? false  # use Clang for C compilation

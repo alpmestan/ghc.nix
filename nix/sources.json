@@ -1,4 +1,16 @@
 {
+    "all-cabal-hashes": {
+        "branch": "hackage",
+        "description": "Cabal hashes",
+        "homepage": "https://github.com/commercialhaskell/all-cabal-hashes",
+        "owner": "commercialhaskell",
+        "repo": "all-cabal-hashes",
+        "rev": "14b2377ba47de78bd557e6e2f4f6a277876103a8",
+        "sha256": "1n43d00bsyhhp895w02g6fhngip9f3hnpkz52dc935d3cs896qih",
+        "type": "file",
+        "url": "https://github.com/commercialhaskell/all-cabal-hashes/archive/14b2377ba47de78bd557e6e2f4f6a277876103a8.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "ghcide-nix": {
         "branch": "master",
         "description": "Nix installation for ghcide",
@@ -24,27 +36,15 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
-        "branch": "nixos-20.03",
-        "description": "A read-only mirror of NixOS/nixpkgs tracking the released channels. Send issues and PRs to",
-        "homepage": "https://github.com/NixOS/nixpkgs",
+        "branch": "nixos-20.09",
+        "description": "Nix Packages collection",
+        "homepage": "",
         "owner": "NixOS",
-        "repo": "nixpkgs-channels",
-        "rev": "51d115ac89d676345b05a0694b23bd2691bf708a",
-        "sha256": "1gfjaa25nq4vprs13h30wasjxh79i67jj28v54lkj4ilqjhgh2rs",
+        "repo": "nixpkgs",
+        "rev": "edb26126d98bc696f4f3e206583faa65d3d6e818",
+        "sha256": "1cl4ka4kk7kh3bl78g06dhiidazf65q8miyzaxi9930d6gwyzkci",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs-channels/archive/51d115ac89d676345b05a0694b23bd2691bf708a.tar.gz",
-        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
-    },
-    "all-cabal-hashes": {
-        "branch": "hackage",
-        "description": "Cabal hashes",
-        "homepage": "https://github.com/commercialhaskell/all-cabal-hashes",
-        "owner": "commercialhaskell",
-        "repo": "all-cabal-hashes",
-        "rev": "14b2377ba47de78bd557e6e2f4f6a277876103a8",
-        "sha256": "1n43d00bsyhhp895w02g6fhngip9f3hnpkz52dc935d3cs896qih",
-        "type": "file",
-        "url": "https://github.com/commercialhaskell/all-cabal-hashes/archive/14b2377ba47de78bd557e6e2f4f6a277876103a8.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs/archive/edb26126d98bc696f4f3e206583faa65d3d6e818.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }
