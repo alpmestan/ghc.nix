@@ -11,6 +11,7 @@ in
 , bootghc   ? "ghc884"
 , version   ? "9.1"
 , hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
+, nixpkgs-unstable ? import (sources.nixpkgs-unstable) {}
 , useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
 , withDocs  ? true
@@ -40,8 +41,6 @@ let
       all-cabal-hashes = sources.all-cabal-hashes;
     };
 
-    ghcide = (import sources.ghcide-nix {})."ghcide-${bootghc}";
-
     ghc    = haskell.compiler.${bootghc};
 
     ourtexlive =
@@ -69,7 +68,7 @@ let
       ++ optional withNuma numactl
       ++ optional withDwarf elfutils
       ++ optional withGhcid ghcid
-      ++ optionals withIde [ghcide]
+      ++ optional withIde (nixpkgs-unstable.haskell-language-server.override { supportedGhcVersions = [ (builtins.replaceStrings ["."] [""] ghc.version) ]; })
       ++ optional withDtrace linuxPackages.systemtap
       ++ (if (! stdenv.isDarwin)
           then [ pxz ]
