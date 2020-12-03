@@ -79,7 +79,7 @@ let
           ])
     );
     happy =
-      if lib.versionAtLeast version "8.8"
+      if lib.versionAtLeast version "9.1"
       then noTest (hspkgs.callHackage "happy" "1.20.0" {})
       else noTest (haskell.packages.ghc865.callHackage "happy" "1.19.12" {});
     depsTools = [ happy hspkgs.alex hspkgs.cabal-install ];
