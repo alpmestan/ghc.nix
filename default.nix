@@ -81,7 +81,7 @@ let
     happy =
       if lib.versionAtLeast version "8.8"
       then noTest (hspkgs.callHackage "happy" "1.20.0" {})
-      else hspkgs.happy_1_19_5;
+      else noTest (haskell.packages.ghc865.callHackage "happy" "1.19.12" {});
     depsTools = [ happy hspkgs.alex hspkgs.cabal-install ];
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;
