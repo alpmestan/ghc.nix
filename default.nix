@@ -108,6 +108,7 @@ in
   packages    = pkgset: [ hsdrv ];
   nativeBuildInputs = depsTools;
   buildInputs = depsSystem;
+  passthru.pkgs = pkgs;
 
   hardeningDisable    = ["fortify"]                  ; ## Effectuated by cc-wrapper
   # Without this, we see a whole bunch of warnings about LANG, LC_ALL and locales in general.
