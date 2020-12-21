@@ -79,9 +79,9 @@ let
           ])
     );
     happy =
-      if lib.versionAtLeast version "8.8"
+      if lib.versionAtLeast version "9.1"
       then noTest (hspkgs.callHackage "happy" "1.20.0" {})
-      else hspkgs.happy_1_19_5;
+      else noTest (haskell.packages.ghc865.callHackage "happy" "1.19.12" {});
     depsTools = [ happy hspkgs.alex hspkgs.cabal-install ];
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;
@@ -108,6 +108,7 @@ in
   packages    = pkgset: [ hsdrv ];
   nativeBuildInputs = depsTools;
   buildInputs = depsSystem;
+  passthru.pkgs = pkgs;
 
   hardeningDisable    = ["fortify"]                  ; ## Effectuated by cc-wrapper
   # Without this, we see a whole bunch of warnings about LANG, LC_ALL and locales in general.
