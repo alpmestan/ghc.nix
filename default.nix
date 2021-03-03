@@ -78,11 +78,18 @@ let
             darwin.apple_sdk.frameworks.Foundation
           ])
     );
+
     happy =
       if lib.versionAtLeast version "9.1"
       then noTest (hspkgs.callHackage "happy" "1.20.0" {})
       else noTest (haskell.packages.ghc865.callHackage "happy" "1.19.12" {});
-    depsTools = [ happy hspkgs.alex hspkgs.cabal-install ];
+
+    alex =
+      if lib.versionAtLeast version "9.2"
+      then noTest (hspkgs.callHackage "alex" "3.2.6" {})
+      else noTest (hspkgs.callHackage "alex" "3.2.5" {});
+
+    depsTools = [ happy alex hspkgs.cabal-install ];
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;
     hsdrv = if (withHadrianDeps &&
@@ -131,7 +138,7 @@ in
     # somehow, CC gets overriden so we set it again here.
     export CC=${stdenv.cc}/bin/cc
     export HAPPY=${happy}/bin/happy
-    export ALEX=${hspkgs.alex}/bin/alex
+    export ALEX=${alex}/bin/alex
     ${lib.optionalString withLlvm "export LLC=${llvmForGhc}/bin/llc"}
     ${lib.optionalString withLlvm "export OPT=${llvmForGhc}/bin/opt"}
 
