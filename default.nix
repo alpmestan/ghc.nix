@@ -8,7 +8,7 @@ let
   sources = import ./nix/sources.nix {};
 in
 { nixpkgs   ? import (sources.nixpkgs) {}
-, bootghc   ? "ghc8102"
+, bootghc   ? "ghc8104"
 , version   ? "9.1"
 , hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
 , nixpkgs-unstable ? import (sources.nixpkgs-unstable) {}
