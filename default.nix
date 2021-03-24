@@ -60,7 +60,6 @@ let
         xlibs.lndir  # for source distribution generation
         zlib.out
         zlib.dev
-        hlint
       ]
       ++ docsPackages
       ++ optional withLlvm llvmForGhc
@@ -89,7 +88,9 @@ let
       then noTest (hspkgs.callHackage "alex" "3.2.6" {})
       else noTest (hspkgs.callHackage "alex" "3.2.5" {});
 
-    depsTools = [ happy alex hspkgs.cabal-install ];
+    hlint = noTest (hspkgs.callHackage "hlint" "3.3" {});
+
+    depsTools = [ hlint happy alex hspkgs.cabal-install ];
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;
     hsdrv = if (withHadrianDeps &&
