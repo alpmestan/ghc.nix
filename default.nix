@@ -22,6 +22,7 @@ in
 , withNuma   ? nixpkgs.stdenv.isLinux
 , withDtrace ? nixpkgs.stdenv.isLinux
 , withGrind ? true
+, fixWSL2 ? false # fix time-compat build issues for WSL2
 }:
 
 with nixpkgs;
@@ -39,6 +40,13 @@ let
 
     hspkgs = haskell.packages.${bootghc}.override {
       all-cabal-hashes = sources.all-cabal-hashes;
+      overrides = self: super: lib.optionalAttrs fixWSL2 {
+        time-compat = noTest super.time-compat;
+        # time-compat has time resolution tests which fail under WSL2
+        # because WSL2 reports wrong clock resolution.
+        # See https://github.com/haskell/time/issues/136
+        # and https://github.com/microsoft/WSL/issues/6029
+      };
     };
 
     ghc    = haskell.compiler.${bootghc};
