@@ -1,6 +1,10 @@
 Simple usage
 ============
 
+## First Things First
+
+This shell is intended to run in the context of the GHC repo, so make sure you've cloned that first. The directions at https://ghc.dev are an excellent place to start.
+
 ## Quickstart
 
 To enter an environment without cloning this repository you can run:
