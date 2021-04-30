@@ -159,8 +159,6 @@ in
 
     ${lib.optionalString withDocs "export FONTCONFIG_FILE=${fonts}"}
 
-    # A convenient shortcut
-
     >&2 echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS:"
     >&2 echo "or use the configure_ghc command):"
     >&2 echo ""
