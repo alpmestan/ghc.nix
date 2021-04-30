@@ -43,6 +43,14 @@ let
 
     ghc    = haskell.compiler.${bootghc};
 
+    configure-ghc = pkgs.writeScriptBin "configure_ghc" ''
+        ./configure $CONFIGURE_ARGS $@
+      '';
+
+    validate-ghc = pkgs.writeScriptBin "validate_ghc" ''
+        config_args="$CONFIGURE_ARGS" ./validate $@
+      '';
+
     ourtexlive =
       nixpkgs.texlive.combine {
         inherit (nixpkgs.texlive)
@@ -61,6 +69,8 @@ let
         zlib.out
         zlib.dev
         hlint
+        configure-ghc
+        validate-ghc
       ]
       ++ docsPackages
       ++ optional withLlvm llvmForGhc
@@ -150,9 +160,6 @@ in
     ${lib.optionalString withDocs "export FONTCONFIG_FILE=${fonts}"}
 
     # A convenient shortcut
-    configure_ghc() { ./configure $CONFIGURE_ARGS $@; }
-
-    validate_ghc() { config_args="$CONFIGURE_ARGS" ./validate $@; }
 
     >&2 echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS:"
     >&2 echo "or use the configure_ghc command):"
