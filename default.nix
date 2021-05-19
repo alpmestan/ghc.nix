@@ -22,6 +22,8 @@ in
 , withNuma   ? nixpkgs.stdenv.isLinux
 , withDtrace ? nixpkgs.stdenv.isLinux
 , withGrind ? true
+, crossTargetArch ? null # E.g. "aarch64-unknown-linux-gnu"
+, nixCrossTools ? null # E.g. "aarch64-multiplatform"
 }:
 
 with nixpkgs;
@@ -52,6 +54,8 @@ let
     fonts = nixpkgs.makeFontsConf { fontDirectories = [ nixpkgs.dejavu_fonts ]; };
     docsPackages = if withDocs then [ python3Packages.sphinx ourtexlive ] else [];
 
+    isCross = assert (nixCrossTools == null) == (crossTargetArch == null); nixCrossTools != null;
+
     depsSystem = with stdenv.lib; (
       [ autoconf automake m4 less
         gmp.dev gmp.out glibcLocales
@@ -70,6 +74,26 @@ let
       ++ optional withGhcid ghcid
       ++ optional withIde (nixpkgs-unstable.haskell-language-server.override { supportedGhcVersions = [ (builtins.replaceStrings ["."] [""] ghc.version) ]; })
       ++ optional withDtrace linuxPackages.systemtap
+      ++ optionals isCross [
+        # cross toolchain
+        pkgsCross.${nixCrossTools}.buildPackages.binutils
+        pkgsCross.${nixCrossTools}.stdenv.cc
+
+        # cross libs
+        linuxHeaders
+        elf-header
+        pkgsCross.${nixCrossTools}.gmp.dev
+        pkgsCross.${nixCrossTools}.gmp.out
+        pkgsCross.${nixCrossTools}.ncurses.dev
+        pkgsCross.${nixCrossTools}.ncurses.out
+        (optionalString withNuma pkgsCross.${nixCrossTools}.numactl)
+
+        # TODO: Add withDwarf dependencies here.
+        # The elfutils package currently doesn't cross-compile.
+
+        # to execute cross-compiled programms.
+        qemu
+      ]
       ++ (if (! stdenv.isDarwin)
           then [ pxz ]
           else [
@@ -110,6 +134,10 @@ let
               ];
               librarySystemDepends = depsSystem;
             });
+    pkgsSource = if !isCross then
+                    nixpkgs
+                 else
+                    pkgsCross.${nixCrossTools};
 in
 (hspkgs.shellFor rec {
   packages    = pkgset: [ hsdrv ];
@@ -122,21 +150,36 @@ in
   # In particular, this makes many tests fail because those warnings show up in test outputs too...
   # The solution is from: https://github.com/NixOS/nix/issues/318#issuecomment-52986702
   LOCALE_ARCHIVE      = if stdenv.isLinux then "${glibcLocales}/lib/locale/locale-archive" else "";
-  CONFIGURE_ARGS      = [ "--with-gmp-includes=${gmp.dev}/include"
-                          "--with-gmp-libraries=${gmp}/lib"
-                          "--with-curses-libraries=${ncurses.out}/lib"
+  CONFIGURE_ARGS      = [ "--with-gmp-includes=${pkgsSource.gmp.dev}/include"
+                          "--with-gmp-libraries=${pkgsSource.gmp}/lib"
+                          "--with-curses-libraries=${pkgsSource.ncurses.out}/lib"
                         ] ++ lib.optionals withNuma [
-                          "--with-libnuma-includes=${numactl}/include"
-                          "--with-libnuma-libraries=${numactl}/lib"
+                          "--with-libnuma-includes=${pkgsSource.numactl}/include"
+                          "--with-libnuma-libraries=${pkgsSource.numactl}/lib"
                         ] ++ lib.optionals withDwarf [
-                          "--with-libdw-includes=${elfutils}/include"
-                          "--with-libdw-libraries=${elfutils}/lib"
+                          "--with-libdw-includes=${pkgsSource.elfutils}/include"
+                          "--with-libdw-libraries=${pkgsSource.elfutils}/lib"
                           "--enable-dwarf-unwind"
+                        ] ++ lib.optionals isCross [
+                          "--target=${crossTargetArch}"
+                          "--enable-bootstrap-with-devel-snapshot"
                         ];
+
+  TARGET_DEPS_EXPORTS  = if !isCross then
+      "export CC=${stdenv.cc}/bin/cc"
+    else
+      ''
+        export NM=${crossTargetArch}-nm
+        export LD=${crossTargetArch}-ld.gold
+        export AR=${crossTargetArch}-ar
+        export AS=${crossTargetArch}-as
+        export CC=${crossTargetArch}-cc
+        export CXX=${crossTargetArch}-cxx
+      '';
 
   shellHook           = let toYesNo = b: if b then "YES" else "NO"; in ''
     # somehow, CC gets overriden so we set it again here.
-    export CC=${stdenv.cc}/bin/cc
+    ${TARGET_DEPS_EXPORTS}
     export HAPPY=${happy}/bin/happy
     export ALEX=${alex}/bin/alex
     ${lib.optionalString withLlvm "export LLC=${llvmForGhc}/bin/llc"}
@@ -154,6 +197,7 @@ in
 
     validate_ghc() { config_args="$CONFIGURE_ARGS" ./validate $@; }
 
+    ${lib.optionalString isCross "echo 'Please make sure you only build up to Stage1 (see UserSettings.hs in hadrian).'"}
     >&2 echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS:"
     >&2 echo "or use the configure_ghc command):"
     >&2 echo ""
