@@ -31,12 +31,16 @@ the compiler to be used even outsite of `nix-shell`. For convenience, the
 `nix-shell` environment also exports a convenience command, `configure_ghc`,
 which invokes `configure` as indicated.
 
+If you are using zsh, you must pass `${=CONFIGURE_ARGS}` instead; otherwise 
+zsh will escape the spaces in `$CONFIGURE_ARGS` and interpret it as one single 
+argument. See also https://unix.stackexchange.com/a/19533/61132.
+
 You can alternatively use Hadrian to build GHC:
 
 ``` sh
 $ nix-shell ~/ghc.nix/
 # from the nix shell:
-$ ./boot && ./configure $CONFIGURE_ARGS
+$ ./boot && ./configure $CONFIGURE_ARGS # In zsh, use ${=CONFIGURE_ARGS}
 # example hadrian command: use 4 cores, build a 'quickest' flavoured GHC
 # and place all the build artifacts under ./_mybuild/.
 $ hadrian/build -j4 --flavour=quickest --build-root=_mybuild
