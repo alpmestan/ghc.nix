@@ -52,7 +52,7 @@ let
     fonts = nixpkgs.makeFontsConf { fontDirectories = [ nixpkgs.dejavu_fonts ]; };
     docsPackages = if withDocs then [ python3Packages.sphinx ourtexlive ] else [];
 
-    depsSystem = with stdenv.lib; (
+    depsSystem = with lib; (
       [ autoconf automake m4 less
         gmp.dev gmp.out glibcLocales
         ncurses.dev ncurses.out
@@ -125,6 +125,7 @@ in
   LOCALE_ARCHIVE      = if stdenv.isLinux then "${glibcLocales}/lib/locale/locale-archive" else "";
   CONFIGURE_ARGS      = [ "--with-gmp-includes=${gmp.dev}/include"
                           "--with-gmp-libraries=${gmp}/lib"
+                          "--with-curses-includes=${ncurses.dev}/include"
                           "--with-curses-libraries=${ncurses.out}/lib"
                         ] ++ lib.optionals withNuma [
                           "--with-libnuma-includes=${numactl}/include"

@@ -1,0 +1,6 @@
+build:
+  image: nixos/nix:2.3.12
+  tags:
+    - x86_64-linux
+  script:
+    - nix build
