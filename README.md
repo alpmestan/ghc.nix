@@ -40,7 +40,6 @@ $ ./boot && ./configure $CONFIGURE_ARGS
 # example hadrian command: use 4 cores, build a 'quickest' flavoured GHC
 # and place all the build artifacts under ./_mybuild/.
 $ hadrian/build -j4 --flavour=quickest --build-root=_mybuild
-# you could also ask hadrian to boot and configure for you, with -c
 
 # if you have never used cabal-install on your machine, you will likely
 # need to run the following before the hadrian command:
