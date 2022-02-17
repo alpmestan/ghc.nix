@@ -47,6 +47,12 @@ $ hadrian/build -j4 --flavour=quickest --build-root=_mybuild
 $ cabal update
 ```
 
+Or when you want to let nix fetch Hadrian dependencies enter the shell with
+
+```sh
+$ nix-shell ~/ghc.nix/ --arg withHadrianDeps true
+```
+
 
 ## Using `ghcide`
 
