@@ -139,8 +139,8 @@ in
   shellHook           = ''
     # somehow, CC gets overriden so we set it again here.
     export CC=${stdenv.cc}/bin/cc
-    export GHC=${ghc}/bin/ghc
-    export GHCPKG=${ghc}/bin/ghc-pkg
+    export GHC=$NIX_GHC
+    export GHCPKG=$NIX_GHCPKG
     export HAPPY=${happy}/bin/happy
     export ALEX=${alex}/bin/alex
     ${lib.optionalString withLlvm "export LLC=${llvmForGhc}/bin/llc"}
