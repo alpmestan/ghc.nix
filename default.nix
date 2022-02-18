@@ -136,7 +136,7 @@ in
                           "--enable-dwarf-unwind"
                         ];
 
-  shellHook           = let toYesNo = b: if b then "YES" else "NO"; in ''
+  shellHook           = ''
     # somehow, CC gets overriden so we set it again here.
     export CC=${stdenv.cc}/bin/cc
     export GHC=${ghc}/bin/ghc
