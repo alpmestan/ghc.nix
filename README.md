@@ -1,5 +1,10 @@
-Simple usage
-============
+These Nix expressions provide an environment for GHC development.
+
+This repository does not contain the GHC sources themselves, so make sure
+you've cloned that repository first. The directions at https://ghc.dev are
+an excellent place to start.
+
+# Simple usage
 
 ## Quickstart
 
@@ -31,8 +36,8 @@ the compiler to be used even outsite of `nix-shell`. For convenience, the
 `nix-shell` environment also exports a convenience command, `configure_ghc`,
 which invokes `configure` as indicated.
 
-If you are using zsh, you must pass `${=CONFIGURE_ARGS}` instead; otherwise 
-zsh will escape the spaces in `$CONFIGURE_ARGS` and interpret it as one single 
+If you are using zsh, you must pass `${=CONFIGURE_ARGS}` instead; otherwise
+zsh will escape the spaces in `$CONFIGURE_ARGS` and interpret it as one single
 argument. See also https://unix.stackexchange.com/a/19533/61132.
 
 You can alternatively use Hadrian to build GHC:
