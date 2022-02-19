@@ -20,21 +20,21 @@ jobs:
           git config --global url."git@github.com:ghc/packages-".insteadOf       git@github.com:ghc/packages/
 
       - name: Checkout GHC
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.4.0
         with:
           repository: ghc/ghc
           submodules: recursive
 
       - name: Checkout ghc.nix
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.4.0
         with:
           path: ghc.nix
 
       - name: Install nix
-        uses: cachix/install-nix-action@v12
+        uses: cachix/install-nix-action@v16
 
       - name: Use cachix
-        uses: cachix/cachix-action@v7
+        uses: cachix/cachix-action@v10
         with:
           name: ghc-nix
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
