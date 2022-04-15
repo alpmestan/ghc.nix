@@ -44,6 +44,8 @@ You can alternatively use Hadrian to build GHC:
 
 ``` sh
 $ nix-shell ~/ghc.nix/
+# or use flake
+$ nix develop --impure ~/ghc.nix/ # impure is needed for getEnv
 # from the nix shell:
 $ ./boot && ./configure $CONFIGURE_ARGS # In zsh, use ${=CONFIGURE_ARGS}
 # example hadrian command: use 4 cores, build a 'quickest' flavoured GHC
@@ -60,7 +62,6 @@ Or when you want to let nix fetch Hadrian dependencies enter the shell with
 ```sh
 $ nix-shell ~/ghc.nix/ --arg withHadrianDeps true
 ```
-
 
 ## Using `ghcide`
 
