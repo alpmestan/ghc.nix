@@ -8,8 +8,8 @@ let
   sources = import ./nix/sources.nix {};
 in
 { nixpkgs   ? import (sources.nixpkgs) {}
-, bootghc   ? "ghc8107"
-, version   ? "9.1"
+, bootghc   ? "ghc922"
+, version   ? "9.3"
 , hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
 , nixpkgs-unstable ? import (sources.nixpkgs-unstable) {}
 , useClang  ? false  # use Clang for C compilation
@@ -57,7 +57,7 @@ let
         gmp.dev gmp.out glibcLocales
         ncurses.dev ncurses.out
         perl git file which python3
-        xlibs.lndir  # for source distribution generation
+        xorg.lndir  # for source distribution generation
         zlib.out
         zlib.dev
         hlint
