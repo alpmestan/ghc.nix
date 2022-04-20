@@ -131,8 +131,8 @@ in
                           "--with-libnuma-includes=${numactl}/include"
                           "--with-libnuma-libraries=${numactl}/lib"
                         ] ++ lib.optionals withDwarf [
-                          "--with-libdw-includes=${elfutils}/include"
-                          "--with-libdw-libraries=${elfutils}/lib"
+                          "--with-libdw-includes=${elfutils.dev}/include"
+                          "--with-libdw-libraries=${elfutils.out}/lib"
                           "--enable-dwarf-unwind"
                         ];
 
