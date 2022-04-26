@@ -22,6 +22,7 @@ in
 , withNuma   ? nixpkgs.stdenv.isLinux
 , withDtrace ? nixpkgs.stdenv.isLinux
 , withGrind ? true
+, withEMSDK ? false                    # load emscripten for js-backend
 }:
 
 with nixpkgs;
@@ -65,7 +66,8 @@ let
       ++ docsPackages
       ++ optional withLlvm llvmForGhc
       ++ optional withGrind valgrind
-      ++ optional withNuma numactl
+      ++ optional withEMSDK emscripten
+      ++ optional withNuma  numactl
       ++ optional withDwarf elfutils
       ++ optional withGhcid ghcid
       ++ optional withIde (nixpkgs-unstable.haskell-language-server.override { supportedGhcVersions = [ (builtins.replaceStrings ["."] [""] ghc.version) ]; })
@@ -143,6 +145,8 @@ in
     export GHCPKG=$NIX_GHCPKG
     export HAPPY=${happy}/bin/happy
     export ALEX=${alex}/bin/alex
+    ${lib.optionalString withEMSDK "export EMSDK=${emscripten}"}
+    ${lib.optionalString withEMSDK "export EMSDK_LLVM=${emscripten}/bin/emscripten-llvm"}
     ${lib.optionalString withLlvm "export LLC=${llvmForGhc}/bin/llc"}
     ${lib.optionalString withLlvm "export OPT=${llvmForGhc}/bin/opt"}
 
