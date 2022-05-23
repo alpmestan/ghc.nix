@@ -85,7 +85,7 @@ let
     happy =
       if lib.versionAtLeast version "9.1"
       then noTest (hspkgs.callHackage "happy" "1.20.0" {})
-      else noTest (haskell.packages.ghc865.callHackage "happy" "1.19.12" {});
+      else noTest (haskell.packages.ghc865Binary.callHackage "happy" "1.19.12" {});
 
     alex =
       if lib.versionAtLeast version "9.1"
