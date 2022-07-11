@@ -4,14 +4,12 @@
 #   nix-shell path/to/ghc.nix/        --run 'hadrian/build -c -j4 --flavour=quickest'
 #   nix-shell path/to/ghc.nix/        --run 'THREADS=4 ./validate --slow'
 #
-let
-  sources = import ./nix/sources.nix {};
-in
-{ nixpkgs   ? import (sources.nixpkgs) {}
-, bootghc   ? "ghc922"
+{ bootghc   ? "ghc923"
 , version   ? "9.3"
 , hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
-, nixpkgs-unstable ? import (sources.nixpkgs-unstable) {}
+, nixpkgs
+, nixpkgs-unstable
+, cabal-hashes
 , useClang  ? false  # use Clang for C compilation
 , withLlvm  ? false
 , withDocs  ? true
@@ -29,17 +27,22 @@ with nixpkgs;
 
 let
     llvmForGhc = if lib.versionAtLeast version "9.1"
-                 then llvm_10
+                 then if withEMSDK
+                      then nixpkgs-unstable.llvmPackages_git.llvm # use the git version for js backend
+                      else llvm_10
                  else llvm_9;
 
     stdenv =
       if useClang
       then nixpkgs.clangStdenv
-      else nixpkgs.stdenv;
+      else if withEMSDK
+        then nixpkgs-unstable.emscriptenStdenv
+        else nixpkgs.stdenv;
+
     noTest = pkg: haskell.lib.dontCheck pkg;
 
     hspkgs = haskell.packages.${bootghc}.override {
-      all-cabal-hashes = sources.all-cabal-hashes;
+      # all-cabal-hashes = cabal-hashes;
     };
 
     ghc    = haskell.compiler.${bootghc};
@@ -52,6 +55,14 @@ let
       };
     fonts = nixpkgs.makeFontsConf { fontDirectories = [ nixpkgs.dejavu_fonts ]; };
     docsPackages = if withDocs then [ python3Packages.sphinx ourtexlive ] else [];
+
+    # This provides the stuff we need from the emsdk
+    emscripten = nixpkgs-unstable.emscripten.override { llvmPackages = nixpkgs-unstable.llvmPackages_git; };
+    emsdk = linkFarm "emsdk" [
+      { name = "upstream/bin"; path = llvmForGhc + "/bin"; }
+      { name = "upstream/emscripten"; path = emscripten + "/bin"; }
+      # { name = "emscripten_cache"; path = nixpkgs-unstable.emscripten + "/share/emscripten/cache"; }
+    ];
 
     depsSystem = with lib; (
       [ autoconf automake m4 less
@@ -66,7 +77,7 @@ let
       ++ docsPackages
       ++ optional withLlvm llvmForGhc
       ++ optional withGrind valgrind
-      ++ optional withEMSDK emscripten
+      ++ optionals withEMSDK [ nixpkgs-unstable.llvm_14 nixpkgs-unstable.lld emsdk ]
       ++ optional withNuma  numactl
       ++ optional withDwarf elfutils
       ++ optional withGhcid ghcid
@@ -93,6 +104,8 @@ let
       else noTest (hspkgs.callHackage "alex" "3.2.5" {});
 
     depsTools = [ happy alex hspkgs.cabal-install ];
+
+    ghcjsBin = (builtins.getEnv "PWD") + "/inplace/ghcjs_toolchain";
 
     hadrianCabalExists = builtins.pathExists hadrianCabal;
     hsdrv = if (withHadrianDeps &&
@@ -125,6 +138,31 @@ in
   # In particular, this makes many tests fail because those warnings show up in test outputs too...
   # The solution is from: https://github.com/NixOS/nix/issues/318#issuecomment-52986702
   LOCALE_ARCHIVE      = if stdenv.isLinux then "${glibcLocales}/lib/locale/locale-archive" else "";
+
+  # We require some special handling for the JS-backend. Specifically emscripten
+  # requires LLVM in the path but the JS-backend looks in a particular directory
+  # for its tooling. Thus we set those paths up here, conditionally on the EMSDK
+  # flag. Note that withEMSDK thus implies withLlvm.
+  GHCJS_HOOK         = if withEMSDK
+                       then ''export EMSDK=${emsdk}/upstream/emscripten
+                              export EMSDK_LLVM=${emsdk}/upstream
+                              export EMSDK_BIN=${emsdk}/upstream/bin
+                              export EMCONFIGURE_JS=2
+                              export PATH=${lib.makeBinPath [ ghcjsBin ]}:$PATH
+                              export PATH=${emsdk}/upstream/emscripten:$PATH
+                              export CC=${emsdk}/upstream/emscripten/emcc
+
+                              # we have to copy from the nixpkgs because we cannot unlink the symlink and copy
+                              # similarly exporting the cache to the nix store fails during configuration
+                              # for some reason
+                              cp -Lr ${emscripten}/share/emscripten/cache .emscripten_cache
+                              chmod u+rwX -R .emscripten_cache
+                              export EM_CACHE=.emscripten_cache
+                            ''
+                       else ''# somehow, CC gets overriden so we set it again here.
+                              export CC=${stdenv.cc}/bin/cc
+                            '';
+
   CONFIGURE_ARGS      = [ "--with-gmp-includes=${gmp.dev}/include"
                           "--with-gmp-libraries=${gmp}/lib"
                           "--with-curses-includes=${ncurses.dev}/include"
@@ -139,16 +177,13 @@ in
                         ];
 
   shellHook           = ''
-    # somehow, CC gets overriden so we set it again here.
-    export CC=${stdenv.cc}/bin/cc
     export GHC=$NIX_GHC
     export GHCPKG=$NIX_GHCPKG
     export HAPPY=${happy}/bin/happy
     export ALEX=${alex}/bin/alex
-    ${lib.optionalString withEMSDK "export EMSDK=${emscripten}"}
-    ${lib.optionalString withEMSDK "export EMSDK_LLVM=${emscripten}/bin/emscripten-llvm"}
-    ${lib.optionalString withLlvm "export LLC=${llvmForGhc}/bin/llc"}
-    ${lib.optionalString withLlvm "export OPT=${llvmForGhc}/bin/opt"}
+    ${GHCJS_HOOK}
+    ${lib.optionalString (withLlvm) "export LLC=${llvmForGhc}/bin/llc"}
+    ${lib.optionalString (withLlvm) "export OPT=${llvmForGhc}/bin/opt"}
 
     # "nix-shell --pure" resets LANG to POSIX, this breaks "make TAGS".
     export LANG="en_US.UTF-8"
