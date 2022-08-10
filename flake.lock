@@ -65,17 +65,17 @@
     },
     "pkgs-unstable": {
       "locked": {
-        "lastModified": 1658923581,
-        "narHash": "sha256-1tkPFSIVsmnDqna3hXzl0wUWatYB6quRtxEH6SWI3Ks=",
-        "ref": "refs/heads/bump_llvm_git",
-        "rev": "7f625281bd451b047d3b287faa1849334f9c643a",
-        "revCount": 394427,
-        "type": "git",
-        "url": "file:///home/doyougnu/programming/nix/nixpkgs"
+        "lastModified": 1659981942,
+        "narHash": "sha256-uCFiP/B/NXOWzhN6TKfMbSxtVMk1bVnCrnJRjCF6RmU=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "39d7f929fbcb1446ad7aa7441b04fb30625a4190",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "file:///home/doyougnu/programming/nix/nixpkgs"
+        "id": "nixpkgs",
+        "ref": "nixos-unstable",
+        "type": "indirect"
       }
     },
     "root": {

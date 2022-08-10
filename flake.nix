@@ -35,8 +35,7 @@
                    };
 
     pkgs.url          = "nixpkgs/nixos-22.05";
-    # nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
-    pkgs-unstable.url    = "/home/doyougnu/programming/nix/nixpkgs";
+    pkgs-unstable.url = "nixpkgs/nixos-unstable";
   };
 
   outputs = { self
@@ -75,7 +74,7 @@
                                                            withHadrianDeps = true;
                                                            withDocs        = true;
                                                            withLlvm        = true;
-                                                           withEMSDK       = true;
+                                                           withEMSDK       = false;
                                                            inherit cabal-hashes;
                                                            inherit nixpkgs;
                                                            inherit nixpkgs-unstable;

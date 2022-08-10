@@ -40,10 +40,10 @@ jobs:
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
 
       - name: Run nix-shell - Boot and Configure
-        run: nix-shell --pure ghc.nix --command "./boot && configure_ghc"
+        run: nix develop ghc.nix -c ./boot && configure_ghc
 
       - name: Run nix-shell - Build Hadrian
-        run: nix-shell --pure ghc.nix --command "pushd hadrian; cabal new-update; cabal new-build -j all; popd"
+        run: nix develop ghc.nix -c pushd hadrian; cabal new-update; cabal new-build -j all; popd
 
       - name: Run nix-shell - hadrian/ghci
-        run: nix-shell --pure ghc.nix --command "echo :q | hadrian/ghci | tail -n2 | grep 'Ok,'"
+        run: nix develop ghc.nix -c echo :q | hadrian/ghci | tail -n2 | grep 'Ok,'
