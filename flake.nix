@@ -52,11 +52,11 @@
             nixpkgs          = pkgs.legacyPackages.${system};
 
         in rec
-          { packages = { default = import ./default.nix { withIde         = true;
+          { packages = { default = import ./default.nix { withIde         = false;
                                                           withHadrianDeps = true;
                                                           withDocs        = true;
                                                           withLlvm        = true;
-                                                          withEMSDK       = false;
+                                                          withEMSDK       = true;
                                                           inherit cabal-hashes;
                                                           inherit nixpkgs;
                                                           inherit nixpkgs-unstable;
@@ -70,11 +70,11 @@
             # legacy commands only allows us to build an environment for either
             # the default package (shown above in packages.default) or the
             # default shell (shown below).
-            devShells = { default = import ./default.nix { withIde         = true;
+            devShells = { default = import ./default.nix { withIde         = false;
                                                            withHadrianDeps = true;
                                                            withDocs        = true;
                                                            withLlvm        = true;
-                                                           withEMSDK       = false;
+                                                           withEMSDK       = true;
                                                            inherit cabal-hashes;
                                                            inherit nixpkgs;
                                                            inherit nixpkgs-unstable;
