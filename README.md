@@ -131,6 +131,16 @@ After a brief wait time, the revision is updated.
 the rest is still managed by `niv` for backwards compatibility. To format all nix code in this repo, run 
 `nix fmt`, to enter a development shell, run `nix develop`.
 
+## direnv
+
+With nix-direnv support, it is possible to make [`direnv`](https://github.com/direnv/direnv/) load `ghc.nix`
+upon entering your local `ghc` directory. Just put a `.envrc` containing `use flake /home/theUser/path/to/ghc.nix#` 
+in the ghc directory. This works for all flake urls, so you can also put `use flake github:alpmestan/ghc.nix#` in 
+there and it should work.
+
+(*Note*: at the time of writing `.direnv` is not part of the `.gitignore` in ghc, so be careful to not accidentally 
+commit it, it's the local cache of your development shell which makes loading it upon entering the directory instant)
+
 ## TODO
 
 - We currently can't just invoke `nix-build` ([#1](https://github.com/alpmestan/ghc.nix/issues/1))
