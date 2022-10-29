@@ -13,6 +13,10 @@ To enter an environment without cloning this repository you can run:
 ```
 nix-shell https://github.com/alpmestan/ghc.nix/archive/master.tar.gz
 ```
+or, with flakes enabled: 
+```
+nix develop github:alpmestan/ghc.nix
+```
 
 ## Building GHC
 
@@ -120,6 +124,12 @@ $ niv update nixpkgs -b nixos-unstable
 ```
 
 After a brief wait time, the revision is updated.
+
+## Flake support
+
+`ghc.nix` now also has basic flake support, `nixpkgs` and `nixpkgs-unstable` are pinned in the flake inputs, 
+the rest is still managed by `niv` for backwards compatibility. To format all nix code in this repo, run 
+`nix fmt`, to enter a development shell, run `nix develop`.
 
 ## TODO
 
