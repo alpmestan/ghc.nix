@@ -14,7 +14,8 @@
   in
   {
     devShells = perSystem (system: {
-      default = (import ./. { inherit system; }) {
+      default = import ./. {
+        inherit system;
         nixpkgs = pkgsFor system;
         nixpkgs-unstable = unstablePkgsFor system;
       };

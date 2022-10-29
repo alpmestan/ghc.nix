@@ -4,15 +4,13 @@
 #   nix-shell path/to/ghc.nix/        --run 'hadrian/build -c -j4 --flavour=quickest'
 #   nix-shell path/to/ghc.nix/        --run 'THREADS=4 ./validate --slow'
 #
-{ system ? builtins.currentSystem }:
-let
-  sources = import ./nix/sources.nix { inherit system; };
-in
-{ nixpkgs ? import (sources.nixpkgs) { inherit system; }
+{ system ? builtins.currentSystem
+, sources ? import ./nix/sources.nix { inherit system; }
+, nixpkgs ? import sources.nixpkgs { inherit system; }
 , bootghc ? "ghc922"
 , version ? "9.3"
 , hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
-, nixpkgs-unstable ? import (sources.nixpkgs-unstable) { }
+, nixpkgs-unstable ? import sources.nixpkgs-unstable { }
 , useClang ? false  # use Clang for C compilation
 , withLlvm ? false
 , withDocs ? true
