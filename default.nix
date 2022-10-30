@@ -7,7 +7,7 @@
 { system ? builtins.currentSystem
 , sources ? import ./nix/sources.nix { inherit system; }
 , nixpkgs ? import sources.nixpkgs { inherit system; }
-, bootghc ? "ghc922"
+, bootghc ? "ghc924"
 , version ? "9.3"
 , hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
 , nixpkgs-unstable ? import sources.nixpkgs-unstable { }
