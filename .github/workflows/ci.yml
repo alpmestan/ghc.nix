@@ -47,3 +47,9 @@ jobs:
 
       - name: Run nix-shell - hadrian/ghci
         run: nix-shell --pure ghc.nix --command "echo :q | hadrian/ghci | tail -n2 | grep 'Ok,'"
+
+      - name: Run nix-shell - Build GHC
+        run: nix-shell --pure ghc.nix --command "hadrian/build -j --flavour=quickest"
+
+      - name: Run nix-shell - Test GHC (by running a testsuite subset)
+        run: nix-shell --pure ghc.nix --command "hadrian/build -j --flavour=quickest test --test-root-dirs=testsuite/tests/programs"
