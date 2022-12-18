@@ -13,19 +13,23 @@ To enter an environment without cloning this repository you can run:
 ```
 nix-shell https://github.com/alpmestan/ghc.nix/archive/master.tar.gz
 ```
+or, with flakes enabled: 
+```
+nix develop github:alpmestan/ghc.nix
+```
 
 ## Building GHC
 
 These commands assume you have cloned this repository
 to `~/ghc.nix`. `default.nix` has many parameters, all
-of them optional. You should take a look at `default.nix`
+of them optional. You should take a look at `ghc.nix`
 for more details.
 
 
 ``` sh
 $ echo "BuildFlavour = quick" > mk/build.mk
 $ cat mk/build.mk.sample >> mk/build.mk
-$ nix-shell ~/ghc.nix/ --run './boot && ./configure $CONFIGURE_ARGS && make -j4'
+$ nix-shell ~/ghc.nix/shell.nix --run './boot && ./configure $CONFIGURE_ARGS && make -j4'
 # works with --pure too
 ```
 
@@ -43,7 +47,7 @@ argument. See also https://unix.stackexchange.com/a/19533/61132.
 You can alternatively use Hadrian to build GHC:
 
 ``` sh
-$ nix-shell ~/ghc.nix/
+$ nix-shell ~/ghc.nix/shell.nix
 # from the nix shell:
 $ ./boot && ./configure $CONFIGURE_ARGS # In zsh, use ${=CONFIGURE_ARGS}
 # example hadrian command: use 4 cores, build a 'quickest' flavoured GHC
@@ -58,7 +62,7 @@ $ cabal update
 Or when you want to let nix fetch Hadrian dependencies enter the shell with
 
 ```sh
-$ nix-shell ~/ghc.nix/ --arg withHadrianDeps true
+$ nix-shell ~/ghc.nix/shell.nix --arg withHadrianDeps true
 ```
 
 
@@ -69,13 +73,13 @@ want to use `ghcide` whilst developing on GHC. In order to do so, pass the `with
 argument to your `nix-shell` invocation.
 
 ```
-nix-shell ~/.ghc.nix --arg withIde true
+nix-shell ~/.ghc.nix/shell.nix --arg withIde true
 ```
 
 ## Running `./validate`
 
 ``` sh
-$ nix-shell ~/ghc.nix/ --pure --run 'THREADS=4 ./validate'
+$ nix-shell ~/ghc.nix/shell.nix --pure --run 'THREADS=4 ./validate'
 ```
 
 See other flags of `validate` by invoking `./validate --help` or just by reading its source code. Note that `./validate --slow` builds the compiler in debug mode which has the side-effect of disabling performance tests.
@@ -85,7 +89,7 @@ See other flags of `validate` by invoking `./validate --help` or just by reading
 It's trivial!
 
 ``` sh
-$ nix-shell ~/ghc.nix/ --arg nixpkgs '(import <nixpkgs> {}).pkgsi686Linux'
+$ nix-shell ~/ghc.nix/shell.nix --arg nixpkgs '(import <nixpkgs> {}).pkgsi686Linux'
 ```
 
 ## Cachix
@@ -100,26 +104,36 @@ The cache contains Linux x64 binaries of all packages that are used during a def
 
 ## Updating `ghc.nix`
 
-We are using [niv](https://github.com/nmattia/niv) for dependency management of `ghc.nix`.
-Our main external dependencies are `nixpkgs` and `ghcide-nix`.
-To update the revisions of those dependencies, you need to run:
-``` sh
-$ niv update
-```
+- *to update everything*: `nix flake update`
+- *to update other inputs*: run `nix flake lock --update-input other-input-name` 
+- *available inputs*: 
+  - `nixpkgs-unstable` (used to provide haskell-packages)
+  - `nixpkgs` (used to provide some tooling, like texlive)
+  - `flake-compat` (to ensure compatibility with pre-flake nix)
+  - `all-cabal-hashes` (for the cabal-hashes of the haskell packages used) 
+- *to use a certain commit for any of the inputs*: use flag `--override-input`, e.g. 
+  ```sh
+  nix develop --override-input all-cabal-hashes "github:commercialhaskell/all-cabal-hashes/f4b3c68d6b5b128503bc1139cfc66e0537bccedd"
+  ```
+- if you plan to upstream your modifications to `ghc.nix`, don't forget to run the formatter (`nix fmt`)
 
-If you want to only update a single dependency, e.g. ghcide, you may run
-``` sh
-$ niv update ghcide-nix
-```
+## Flake support
 
-If you need to switch the branch of nixpkgs, you need to run `niv update nixpkgs -b <branch-name>`.
-As an example, assume you want to use the nightly nixpkgs channel, you run:
+`ghc.nix` now also has basic flake support, `nixpkgs` and `nixpkgs-unstable` are pinned in the flake inputs
+and the cabal hashes are pinned in the toplevel flake (not via the flake inputs because that is currently not 
+possible in an idiomatic way) 
 
-``` sh
-$ niv update nixpkgs -b nixos-unstable
-```
+To format all nix code in this repo, run `nix fmt`, to enter a development shell, run `nix develop`.
 
-After a brief wait time, the revision is updated.
+## direnv
+
+With nix-direnv support, it is possible to make [`direnv`](https://github.com/direnv/direnv/) load `ghc.nix`
+upon entering your local `ghc` directory. Just put a `.envrc` containing `use flake /home/theUser/path/to/ghc.nix#` 
+in the ghc directory. This works for all flake urls, so you can also put `use flake github:alpmestan/ghc.nix#` in 
+there and it should work.
+
+(*Note*: at the time of writing `.direnv` is not part of the `.gitignore` in ghc, so be careful to not accidentally 
+commit it, it's the local cache of your development shell which makes loading it upon entering the directory instant)
 
 ## TODO
 

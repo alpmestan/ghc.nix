@@ -40,16 +40,31 @@ jobs:
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
 
       - name: Run nix-shell - Boot and Configure
-        run: nix-shell --pure ghc.nix --command "./boot && configure_ghc"
+        run: nix-shell --pure ghc.nix/shell.nix --command "./boot && configure_ghc"
 
       - name: Run nix-shell - Build Hadrian
-        run: nix-shell --pure ghc.nix --command "pushd hadrian; cabal new-update; cabal new-build -j all; popd"
+        run: nix-shell --pure ghc.nix/shell.nix --command "pushd hadrian; cabal new-update; cabal new-build -j all; popd"
 
       - name: Run nix-shell - hadrian/ghci
-        run: nix-shell --pure ghc.nix --command "echo :q | hadrian/ghci | tail -n2 | grep 'Ok,'"
+        run: nix-shell --pure ghc.nix/shell.nix --command "echo :q | hadrian/ghci | tail -n2 | grep 'Ok,'"
 
       - name: Run nix-shell - Build GHC
-        run: nix-shell --pure ghc.nix --command "hadrian/build -j --flavour=quickest"
+        run: nix-shell --pure ghc.nix/shell.nix --command "hadrian/build -j --flavour=quickest"
 
       - name: Run nix-shell - Test GHC (by running a testsuite subset)
-        run: nix-shell --pure ghc.nix --command "hadrian/build -j --flavour=quickest test --test-root-dirs=testsuite/tests/programs"
+        run: nix-shell --pure ghc.nix/shell.nix --command "hadrian/build -j --flavour=quickest test --test-root-dirs=testsuite/tests/programs"
+
+      - name: Run nix develop - Boot and Configure
+        run: nix develop -Lv ghc.nix# -c bash -c "./boot && configure_ghc"
+
+      - name: Run nix develop - Build Hadrian
+        run: nix develop -Lv ghc.nix# -c bash -c "pushd hadrian; cabal new-update; cabal new-build -j all; popd"
+
+      - name: Run nix develop - hadrian/ghci
+        run: nix develop -Lv ghc.nix# -c bash -c "echo :q | hadrian/ghci | tail -n2 | grep 'Ok,'"
+
+      - name: Run nix develop - Build GHC
+        run: nix develop -Lv ghc.nix# -c bash -c "hadrian/build -j --flavour=quickest"
+
+      - name: Run nix develop - Test GHC (by running a testsuite subset)
+        run: nix develop -Lv ghc.nix# -c bash -c "hadrian/build -j --flavour=quickest test --test-root-dirs=testsuite/tests/programs"
