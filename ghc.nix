@@ -20,7 +20,7 @@
 , withDwarf ? nixpkgs.stdenv.isLinux  # enable libdw unwinding support
 , withNuma ? nixpkgs.stdenv.isLinux
 , withDtrace ? nixpkgs.stdenv.isLinux
-, withGrind ? true
+, withGrind ? !(nixpkgs.valgrind.meta.broken or false)
 , withEMSDK ? false                    # load emscripten for js-backend
 }:
 
