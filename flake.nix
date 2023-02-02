@@ -1,6 +1,6 @@
 {
   description = "ghc.nix - the ghc devShell";
-  nixConfig.bash-prompt = "\\e[34;1mghc.nix ~ \\e[0m";
+  nixConfig.bash-prompt = "\\[\\e[34;1m\\]ghc.nix ~ \\[\\e[0m\\]";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
