@@ -18,22 +18,18 @@
   outputs = inputs@{ self, nixpkgs, nixpkgs-unstable, all-cabal-hashes, ... }: with nixpkgs.lib; let
     supportedSystems = nixpkgs.lib.systems.flakeExposed;
     perSystem = genAttrs supportedSystems;
-    pkgsFor = system: import nixpkgs { inherit system; };
-    unstablePkgsFor = system: import nixpkgs-unstable { inherit system; };
   in
   {
     devShells = perSystem (system: rec {
       ghc-nix = import ./ghc.nix {
-        inherit system;
+        inherit nixpkgs nixpkgs-unstable system;
         all-cabal-hashes = all-cabal-hashes.outPath;
         withHadrianDeps = true;
         withIde = true;
-        nixpkgs = pkgsFor system;
-        nixpkgs-unstable = unstablePkgsFor system;
       };
 
       default = ghc-nix;
     });
-    formatter = perSystem (system: (pkgsFor system).nixpkgs-fmt);
+    formatter = perSystem (system: (import nixpkgs { inherit system; }).nixpkgs-fmt);
   };
 }
