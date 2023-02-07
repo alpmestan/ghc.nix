@@ -1,4 +1,7 @@
-(import
+args@
+{ system ? builtins.currentSystem or "unknown-system"
+, ...
+}: (import
   (
     let lock = builtins.fromJSON (builtins.readFile ./flake.lock); in
     fetchTarball {
@@ -7,4 +10,4 @@
     }
   )
   { src = ./.; }
-).shellNix
+).defaultNix.outputs.legacy (args // { inherit system; })

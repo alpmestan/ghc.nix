@@ -33,7 +33,7 @@ nix develop github:alpmestan/ghc.nix
 ## Building GHC
 
 These commands assume you have cloned this repository
-to `~/ghc.nix`. `default.nix` has many parameters, all
+to `~/ghc.nix`. `shell.nix` has many parameters, all
 of them optional. You should take a look at `ghc.nix`
 for more details.
 
@@ -126,26 +126,65 @@ The cache contains Linux x64 binaries of all packages that are used during a def
 - *to use a certain commit for any of the inputs*: use flag `--override-input`, e.g. 
   ```sh
   nix develop --override-input all-cabal-hashes "github:commercialhaskell/all-cabal-hashes/f4b3c68d6b5b128503bc1139cfc66e0537bccedd"
-  ```
-- if you plan to upstream your modifications to `ghc.nix`, don't forget to run the formatter (`nix fmt`)
+  ``` 
+  this is not yet support in `flake-compat` mode, you will have to manually set the version in the `flake.nix` by appending 
+  `/your-commit-hash` to the input you want to change, then running `nix flake lock --update-input input-you-want-to-update`. 
+  Of course you can also just manually pass your own `nixpkgs` version to the `shell.nix`, this will override the one 
+  provided by the flake.
+- if you plan to upstream your modifications to `ghc.nix`, don't forget to run the formatter using `nix fmt`
 
 ## Flake support
 
-`ghc.nix` now also has basic flake support, `nixpkgs` and `nixpkgs-unstable` are pinned in the flake inputs
-and the cabal hashes are pinned in the toplevel flake (not via the flake inputs because that is currently not 
-possible in an idiomatic way) 
+`ghc.nix` now also has basic flake support, `nixpkgs`, `nixpkgs-unstable` and the `cabal-hashes` are pinned in the flake inputs.
 
 To format all nix code in this repository, run `nix fmt`, to enter a development shell, run `nix develop`.
+- To change the settings of the `devShell` to your liking, just adjust the `userSettings` attribute-set in the top-level flake.
+- To format all nix code in this repo, run `nix fmt`, to enter a development shell, run `nix develop`.
 
-## direnv
+## Legacy nix-commands support
 
-With nix-direnv support, it is possible to make [`direnv`](https://github.com/direnv/direnv/) load `ghc.nix`
+We use `flake-compat` to ensure compatibility of the old nix commands with the new flake commands and to use the flake inputs pinned by 
+`nix` itself. Unfortunately there is a shortcoming of the current implementation of the flake nix commands that makes it so that you 
+cannot pass arguments to the `devShell`s. To ensure backwards compatibility, we call a function that we keep as flake output from the 
+`./shell.nix` file. Most importantly, this means that **the `shell.nix` in this repo doesn't behave like a normal `flake-compat` shell 
+but rather like a legacy `shell.nix` that can indeed be passed arguments**. 
+The `default.nix` behaves just like you would expect it to behave with the use of `flake-compat`.
+
+The following table shows what `./ghc.nix` can be configured with; the first column is the name of the attribute to be configured, the second 
+argument the description of that argument, the third the default value for that argument and the third one, whether or not the `flake.nix`
+takes over orchestration of this attribute, this is the case if they're either pinned by the lock-file (e.g. `nixpkgs`) or can introduce impurity
+(e.g. `system`)
+
+| attribute-name | description | default | orchestrated `flake.nix` |
+| -- | -- | -- | -- |
+| `system` | the system this is run on | `builtins.currentSystem` or flake system | ✅ |
+| `nixpkgs` | the stable `nixpkgs` set used | `nixpkgs` as pinned in the lock-file | ✅ |
+| `nixpkgs-unstable` | the unstable `nixpkgs` set used | `nixpkgs-unstable` as pinned in the lock-file | ✅ |
+| `all-cabal-hashes` | the `all-cabal-hashes` version used | `all-cabal-hashes` as pinned in the lock-file | ✅ |
+| `bootghc` | the bootstrap `ghc` version | `"ghc924"` | ❌ |
+| `version` | the version of `ghc` to be bootstrapped | `"9.3"` | ❌ |
+| `hadrianCabal` | where `hadrian` is to be found |  `(builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"` | ❌ |
+| `useClang` | whether Clang is to be used for C compilation | `false` | ❌ |
+| `withLlvm` | whether `llvm` should be included in the `librarySystemDepends` | `false` | ❌ |
+| `withDocs` | whether to include dependencies to compile docs | `true` | ❌ |
+| `withGhcid` | whether to include `ghci` | `false` | ❌ |
+| `withIde` | whether to include `hls` | `false` | ❌ |
+| `withHadrianDeps` | whether to include dependencies for `hadrian` | `false` | ❌ |
+| `withDwarf` | whether to enable `libdw` unwinding support | `nixpkgs.stdenv.isLinux` | ❌ |
+| `withNuma` | whether to enable `numa` support | `nixpkgs.stdenv.isLinux` | ❌ |
+| `withDtrace` | whether to include `linuxPackage.systemtap` |  `nixpkgs.stdenv.isLinux` | ❌ |
+| `withGrind` | whether to include `valgrind` | `true` | ❌ |
+| `withEMSDK` | whether to include `emscripten` for the js-backend | `false` | ❌ |
+
+## `direnv`
+
+With `nix-direnv` support, it is possible to make [`direnv`](https://github.com/direnv/direnv/) load `ghc.nix`
 upon entering your local `ghc` directory. Just put a `.envrc` containing `use flake /home/theUser/path/to/ghc.nix#` 
-in the ghc directory. This works for all flake urls, so you can also put `use flake github:alpmestan/ghc.nix#` in 
+in the `ghc` directory. This works for all flake URLs, so you can also put `use flake github:alpmestan/ghc.nix#` in 
 there and it should work.
 
-(*Note*: at the time of writing `.direnv` is not part of the `.gitignore` in ghc, so be careful to not accidentally 
-commit it, it's the local cache of your development shell which makes loading it upon entering the directory instant)
+(*Note*: at the time of writing `.direnv` is not part of the `.gitignore` in `ghc`, so be careful to not accidentally 
+check it out, it's the local cache of your development shell which makes loading it upon entering the directory instant)
 
 ## TODO
 

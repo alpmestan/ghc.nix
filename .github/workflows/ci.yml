@@ -55,16 +55,19 @@ jobs:
         run: nix-shell --pure ghc.nix/shell.nix --command "hadrian/build -j --flavour=quickest test --test-root-dirs=testsuite/tests/programs"
 
       - name: Run nix develop - Boot and Configure
-        run: nix develop -Lv ghc.nix# -c bash -c "./boot && configure_ghc"
+        run: nix develop -Lv --fallback ghc.nix# -c bash -c "./boot && configure_ghc"
 
       - name: Run nix develop - Build Hadrian
-        run: nix develop -Lv ghc.nix# -c bash -c "pushd hadrian; cabal new-update; cabal new-build -j all; popd"
+        run: nix develop -Lv --fallback ghc.nix# -c bash -c "pushd hadrian; cabal new-update; cabal new-build -j all; popd"
 
       - name: Run nix develop - hadrian/ghci
-        run: nix develop -Lv ghc.nix# -c bash -c "echo :q | hadrian/ghci | tail -n2 | grep 'Ok,'"
+        run: nix develop -Lv --fallback ghc.nix# -c bash -c "echo :q | hadrian/ghci | tail -n2 | grep 'Ok,'"
 
       - name: Run nix develop - Build GHC
-        run: nix develop -Lv ghc.nix# -c bash -c "hadrian/build -j --flavour=quickest"
+        run: nix develop -Lv --fallback ghc.nix# -c bash -c "hadrian/build -j --flavour=quickest"
 
       - name: Run nix develop - Test GHC (by running a testsuite subset)
-        run: nix develop -Lv ghc.nix# -c bash -c "hadrian/build -j --flavour=quickest test --test-root-dirs=testsuite/tests/programs"
+        run: nix develop -Lv --fallback ghc.nix# -c bash -c "hadrian/build -j --flavour=quickest test --test-root-dirs=testsuite/tests/programs"
+
+      - name: check formatting 
+        run: nix build -Lv --fallback ghc.nix#formatter.x86_64-linux
