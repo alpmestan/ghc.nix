@@ -4,7 +4,7 @@
       "flake": false,
       "locked": {
         "lastModified": 1675288170,
-        "narHash": "sha256-7R+S0PGfAhmIwaawcztBbe3fE/sFyX77dglJ4LyIKds=",
+        "narHash": "sha256-7vtAf3PkiC3tbnuTojrgsdqMSkeip9fiUOXEwMyParw=",
         "owner": "commercialhaskell",
         "repo": "all-cabal-hashes",
         "rev": "e55a65f8e5361aa2f45610b7dafc350731cb7455",
