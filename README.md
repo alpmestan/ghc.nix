@@ -10,11 +10,23 @@ an excellent place to start.
 
 To enter an environment without cloning this repository you can run:
 
+```sh
+nix-shell https://github.com/alpmestan/ghc.nix/archive/master.tar.gz --attr devShells.<your-system>.default
 ```
-nix-shell https://github.com/alpmestan/ghc.nix/archive/master.tar.gz
+where `<your-system>` would be the nix name of your system, in the typical case this is one of 
+- `x86_64-linux` (for `x86_64` Linux systems)
+- `aarch64-linux` (for ARM Linux systems)
+- `x86_64-darwin` (for old macs that do not have apple silicon)
+- `aarch64-darwin` (for macs with apple silicon)
+
+Hence, an invocation on an `x86_64` Linux system would look like this:
+```sh
+nix-shell https://github.com/alpmestan/ghc.nix/archive/master.tar.gz --attr devShells.x86_64-linux.default
 ```
-or, with flakes enabled: 
-```
+
+This repository is flakes enabled, which means, that you can more easily get a `devShell` using: 
+
+```sh
 nix develop github:alpmestan/ghc.nix
 ```
 
@@ -26,7 +38,7 @@ of them optional. You should take a look at `ghc.nix`
 for more details.
 
 
-``` sh
+```sh
 $ echo "BuildFlavour = quick" > mk/build.mk
 $ cat mk/build.mk.sample >> mk/build.mk
 $ nix-shell ~/ghc.nix/shell.nix --run './boot && ./configure $CONFIGURE_ARGS && make -j4'
@@ -46,7 +58,7 @@ argument. See also https://unix.stackexchange.com/a/19533/61132.
 
 You can alternatively use Hadrian to build GHC:
 
-``` sh
+```sh
 $ nix-shell ~/ghc.nix/shell.nix
 # from the nix shell:
 $ ./boot && ./configure $CONFIGURE_ARGS # In zsh, use ${=CONFIGURE_ARGS}
@@ -72,13 +84,13 @@ You can also use `ghc.nix` to provide the right version of `ghcide` if you
 want to use `ghcide` whilst developing on GHC. In order to do so, pass the `withIde`
 argument to your `nix-shell` invocation.
 
-```
+```sh
 nix-shell ~/.ghc.nix/shell.nix --arg withIde true
 ```
 
 ## Running `./validate`
 
-``` sh
+```sh
 $ nix-shell ~/ghc.nix/shell.nix --pure --run 'THREADS=4 ./validate'
 ```
 
@@ -88,7 +100,7 @@ See other flags of `validate` by invoking `./validate --help` or just by reading
 
 It's trivial!
 
-``` sh
+```sh
 $ nix-shell ~/ghc.nix/shell.nix --arg nixpkgs '(import <nixpkgs> {}).pkgsi686Linux'
 ```
 
@@ -123,7 +135,7 @@ The cache contains Linux x64 binaries of all packages that are used during a def
 and the cabal hashes are pinned in the toplevel flake (not via the flake inputs because that is currently not 
 possible in an idiomatic way) 
 
-To format all nix code in this repo, run `nix fmt`, to enter a development shell, run `nix develop`.
+To format all nix code in this repository, run `nix fmt`, to enter a development shell, run `nix develop`.
 
 ## direnv
 
