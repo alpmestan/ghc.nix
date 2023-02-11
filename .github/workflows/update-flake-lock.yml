@@ -1,0 +1,28 @@
+name: update-flake-lock
+on:
+  workflow_dispatch: # allows manual triggering
+  schedule:
+    - cron: '0 0 * * 0' # runs once a week on Sunday, 0:00 
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install Nix
+        uses: cachix/install-nix-action@v16
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      - name: Update flake.lock
+        uses: DeterminateSystems/update-flake-lock@v16
+        with:
+          pr-title: "Update flake.lock" # Title of PR to be created
+          pr-labels: |                  # Labels to be set on the PR
+            automated 
+          token: ${{ secrets.GH_TOKEN_FOR_UPDATES }} 
+          # this has to be created in order for the action to run the CI after opening a PR
+          # to create such a token, go to https://github.com/settings/tokens , generate a new 
+          # token with at least the "repo" scope, then put it in your Actions secrets of ghc.nix
+          # name the secret GH_TOKEN_FOR_UPDATES
