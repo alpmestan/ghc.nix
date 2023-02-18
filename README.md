@@ -155,6 +155,18 @@ argument the description of that argument, the third the default value for that 
 takes over orchestration of this attribute, this is the case if they're either pinned by the lock-file (e.g. `nixpkgs`) or can introduce impurity
 (e.g. `system`)
 
+If you do not want to pass your arguments with `--arg`, but rather capture your passed arguments in a `.nix` file, you can locally create a
+file, say `shell.nix` with the following contents:
+
+```nix
+import ./path/to/ghc.nix/shell.nix {
+  withHadrianDeps = true;
+  withIde = true;
+  # ... and so on
+}
+```
+be careful to specify the path to the `shell.nix`, not to the `default.nix`.
+
 | attribute-name | description | default | orchestrated `flake.nix` |
 | -- | -- | -- | -- |
 | `system` | the system this is run on | `builtins.currentSystem` or flake system | ✅ |
