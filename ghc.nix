@@ -4,6 +4,12 @@
 #   nix-shell path/to/ghc.nix/        --run 'hadrian/build -c -j4 --flavour=quickest'
 #   nix-shell path/to/ghc.nix/        --run 'THREADS=4 ./validate --slow'
 #
+let
+  pkgsFor = nixpkgs: system:
+    import nixpkgs { inherit system; overlays = [ ]; config = { }; };
+
+in
+
 { system ? builtins.currentSystem
 , nixpkgs
 , nixpkgs-unstable
@@ -17,14 +23,44 @@
 , withGhcid ? false
 , withIde ? false
 , withHadrianDeps ? false
-, withDwarf ? nixpkgs.stdenv.isLinux  # enable libdw unwinding support
-, withNuma ? nixpkgs.stdenv.isLinux
-, withDtrace ? nixpkgs.stdenv.isLinux
-, withGrind ? !(nixpkgs.valgrind.meta.broken or false)
+, withDwarf ? (pkgsFor nixpkgs system).stdenv.isLinux  # enable libdw unwinding support
+, withNuma ? (pkgsFor nixpkgs system).stdenv.isLinux
+, withDtrace ? (pkgsFor nixpkgs system).stdenv.isLinux
+, withGrind ? !((pkgsFor nixpkgs system).valgrind.meta.broken or false)
 , withEMSDK ? false                    # load emscripten for js-backend
 }:
 
-with nixpkgs;
+let
+  overlay = self: super: {
+    haskell = super.haskell // {
+      packages = super.haskell.packages // {
+        ${bootghc} = super.haskell.packages.${bootghc}.override (old: {
+          inherit all-cabal-hashes;
+          overrides =
+            self.lib.composeExtensions
+              (old.overrides or (_: _: {}))
+              (hself: hsuper: {
+                ormolu =
+                  if self.system == "aarch64-darwin"
+                  then
+                    self.haskell.lib.overrideCabal
+                      hsuper.ormolu
+                      (_: { enableSeparateBinOutput = false; })
+                  else
+                    hsuper.ormolu;
+              });
+        });
+      };
+    };
+  };
+
+  pkgs = import nixpkgs { inherit system; overlays = [ overlay ]; };
+
+  pkgs-unstable =
+    import nixpkgs-unstable { inherit system; overlays = [ overlay ]; };
+in
+
+with pkgs;
 
 let
   llvmForGhc =
@@ -34,8 +70,8 @@ let
 
   stdenv =
     if useClang
-    then nixpkgs.clangStdenv
-    else nixpkgs.stdenv;
+    then pkgs.clangStdenv
+    else pkgs.stdenv;
   noTest = pkg: haskell.lib.dontCheck pkg;
 
   hspkgs = haskell.packages.${bootghc}.override {
@@ -45,12 +81,12 @@ let
   ghc = haskell.compiler.${bootghc};
 
   ourtexlive =
-    nixpkgs.texlive.combine {
-      inherit (nixpkgs.texlive)
+    pkgs.texlive.combine {
+      inherit (pkgs.texlive)
         scheme-medium collection-xetex fncychap titlesec tabulary varwidth
         framed capt-of wrapfig needspace dejavu-otf helvetic upquote;
     };
-  fonts = nixpkgs.makeFontsConf { fontDirectories = [ nixpkgs.dejavu_fonts ]; };
+  fonts = pkgs.makeFontsConf { fontDirectories = [ pkgs.dejavu_fonts ]; };
   docsPackages = if withDocs then [ python3Packages.sphinx ourtexlive ] else [ ];
 
   depsSystem = with lib; (
@@ -81,8 +117,8 @@ let
     ++ optional withNuma numactl
     ++ optional withDwarf elfutils
     ++ optional withGhcid ghcid
-    ++ optional withIde (nixpkgs-unstable.haskell-language-server.override { supportedGhcVersions = [ (builtins.replaceStrings [ "." ] [ "" ] ghc.version) ]; })
-    ++ optional withIde nixpkgs-unstable.clang-tools # N.B. clang-tools for clangd
+    ++ optional withIde (pkgs-unstable.haskell-language-server.override { supportedGhcVersions = [ (builtins.replaceStrings [ "." ] [ "" ] ghc.version) ]; })
+    ++ optional withIde pkgs-unstable.clang-tools # N.B. clang-tools for clangd
     ++ optional withDtrace linuxPackages.systemtap
     ++ (if (! stdenv.isDarwin)
     then [ pxz ]
