@@ -18,14 +18,10 @@
   outputs = { self, nixpkgs, nixpkgs-unstable, all-cabal-hashes, ... }: with nixpkgs.lib; let
     supportedSystems = systems.flakeExposed;
     perSystem = genAttrs supportedSystems;
-    pkgsFor = system: import nixpkgs { inherit system; };
-    unstablePkgsFor = system: import nixpkgs-unstable { inherit system; };
 
     defaultSettings = system: {
-      inherit system;
+      inherit nixpkgs nixpkgs-unstable system;
       all-cabal-hashes = all-cabal-hashes.outPath;
-      nixpkgs = pkgsFor system;
-      nixpkgs-unstable = unstablePkgsFor system;
     };
 
     # NOTE: change this according to the settings allowed in the ./ghc.nix file and described 
@@ -40,7 +36,7 @@
       ghc-nix = import ./ghc.nix (defaultSettings system // userSettings);
       default = ghc-nix;
     });
-    formatter = perSystem (system: (pkgsFor system).nixpkgs-fmt);
+    formatter = perSystem (system: (import nixpkgs { inherit system; }).nixpkgs-fmt);
 
     # NOTE: this attribute is used by the flake-compat code to allow passing arguments to ./ghc.nix
     legacy = args: import ./ghc.nix (defaultSettings args.system // args);
