@@ -13,15 +13,36 @@
       url = "github:commercialhaskell/all-cabal-hashes/hackage";
       flake = false;
     };
+
+    pre-commit-hooks = {
+      url = "github:cachix/pre-commit-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      inputs.nixpkgs-stable.follows = "nixpkgs";
+      inputs.flake-compat.follows = "flake-compat";
+    };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, all-cabal-hashes, ... }: with nixpkgs.lib; let
-    supportedSystems = systems.flakeExposed;
+  outputs = { nixpkgs, nixpkgs-unstable, all-cabal-hashes, pre-commit-hooks, ... }: with nixpkgs.lib; let
+    supportedSystems =
+      # allow nix flake show and nix flake check when passing --impure
+      if builtins.hasAttr "currentSystem" builtins
+      then [ builtins.currentSystem ]
+      else nixpkgs.lib.systems.flakeExposed;
     perSystem = genAttrs supportedSystems;
 
     defaultSettings = system: {
       inherit nixpkgs nixpkgs-unstable system;
       all-cabal-hashes = all-cabal-hashes.outPath;
+    };
+
+    pre-commit-check = system: pre-commit-hooks.lib.${system}.run {
+      src = ./.;
+      hooks = {
+        nixpkgs-fmt.enable = true;
+        statix.enable = true;
+        deadnix.enable = true;
+        typos.enable = true;
+      };
     };
 
     # NOTE: change this according to the settings allowed in the ./ghc.nix file and described 
@@ -35,8 +56,13 @@
     devShells = perSystem (system: rec {
       ghc-nix = import ./ghc.nix (defaultSettings system // userSettings);
       default = ghc-nix;
+
+      formatting = nixpkgs.legacyPackages.${system}.mkShell {
+        inherit (pre-commit-check system) shellHook;
+      };
     });
-    formatter = perSystem (system: (import nixpkgs { inherit system; }).nixpkgs-fmt);
+
+    checks = perSystem (system: { formatting = pre-commit-check system; });
 
     # NOTE: this attribute is used by the flake-compat code to allow passing arguments to ./ghc.nix
     legacy = args: import ./ghc.nix (defaultSettings args.system // args);

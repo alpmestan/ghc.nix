@@ -39,6 +39,9 @@ jobs:
           name: ghc-nix
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
 
+      - name: Check nix flake 
+        run: nix flake check ghc.nix# -Lv --impure --fallback
+
       - name: Run nix-shell - Boot and Configure
         run: nix-shell --pure ghc.nix/shell.nix --command "./boot && configure_ghc"
 
@@ -68,6 +71,3 @@ jobs:
 
       - name: Run nix develop - Test GHC (by running a testsuite subset)
         run: nix develop -Lv --fallback ghc.nix# -c bash -c "hadrian/build -j --flavour=quickest test --test-root-dirs=testsuite/tests/programs"
-
-      - name: check formatting 
-        run: nix build -Lv --fallback ghc.nix#formatter.x86_64-linux
