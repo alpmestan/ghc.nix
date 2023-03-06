@@ -139,7 +139,6 @@ The cache contains Linux x64 binaries of all packages that are used during a def
 
 To format all nix code in this repository, run `nix fmt`, to enter a development shell, run `nix develop`.
 - To change the settings of the `devShell` to your liking, just adjust the `userSettings` attribute-set in the top-level flake.
-- To format all nix code in this repo, run `nix fmt`, to enter a development shell, run `nix develop`.
 
 ## Legacy nix-commands support
 
@@ -167,7 +166,7 @@ import ./path/to/ghc.nix/shell.nix {
 ```
 be careful to specify the path to the `shell.nix`, not to the `default.nix`.
 
-| attribute-name | description | default | orchestrated `flake.nix` |
+| attribute-name | description | default | orchestrated by nix flake |
 | -- | -- | -- | -- |
 | `system` | the system this is run on | `builtins.currentSystem` or flake system | ✅ |
 | `nixpkgs` | the stable `nixpkgs` set used | `nixpkgs` as pinned in the lock-file | ✅ |
@@ -197,6 +196,16 @@ there and it should work.
 
 (*Note*: at the time of writing `.direnv` is not part of the `.gitignore` in `ghc`, so be careful to not accidentally 
 check it out, it's the local cache of your development shell which makes loading it upon entering the directory instant)
+
+## contributing
+
+- we check formatting and linting in our CI, so please be careful to run `nix flake check --allow-import-from-derivation --impure`
+  before submitting changes as a PR
+- the tooling to run the linting is provided by a nix `devShell` which you can easily obtain by running `nix develop .#formatting`.
+  Now you only have to run `pre-commit run --all` to check for linting and to reformat; using this `devShell`, the formatting
+  will also be checked before committing. You can skip the check by passing `--no-verify` to the `git commit` command
+- `ghc.nix` also offers `direnv` integration, so if you have it installed, just run `direnv allow` to automatically load the
+  formatting `devShell` and the accompanying pre-commit hook.
 
 ## TODO
 

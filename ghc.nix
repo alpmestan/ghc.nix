@@ -38,8 +38,8 @@ let
           inherit all-cabal-hashes;
           overrides =
             self.lib.composeExtensions
-              (old.overrides or (_: _: {}))
-              (hself: hsuper: {
+              (old.overrides or (_: _: { }))
+              (_hself: hsuper: {
                 ormolu =
                   if self.system == "aarch64-darwin"
                   then
@@ -72,7 +72,7 @@ let
     if useClang
     then pkgs.clangStdenv
     else pkgs.stdenv;
-  noTest = pkg: haskell.lib.dontCheck pkg;
+  noTest = haskell.lib.dontCheck;
 
   hspkgs = haskell.packages.${bootghc}.override {
     inherit all-cabal-hashes;
@@ -167,8 +167,8 @@ let
         librarySystemDepends = depsSystem;
       });
 in
-(hspkgs.shellFor rec {
-  packages = pkgset: [ hsdrv ];
+hspkgs.shellFor rec {
+  packages = _pkgset: [ hsdrv ];
   nativeBuildInputs = depsTools;
   buildInputs = depsSystem;
   passthru.pkgs = pkgs;
@@ -193,7 +193,7 @@ in
   ];
 
   shellHook = ''
-    # somehow, CC gets overriden so we set it again here.
+    # somehow, CC gets overridden so we set it again here.
     export CC=${stdenv.cc}/bin/cc
     export GHC=$NIX_GHC
     export GHCPKG=$NIX_GHCPKG
@@ -216,4 +216,4 @@ in
     >&2 echo ""
     >&2 echo "  ${lib.concatStringsSep "\n  " CONFIGURE_ARGS}"
   '';
-})
+}
