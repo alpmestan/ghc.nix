@@ -185,7 +185,7 @@ be careful to specify the path to the `shell.nix`, not to the `default.nix`.
 | `withNuma` | whether to enable `numa` support | `nixpkgs.stdenv.isLinux` | ❌ |
 | `withDtrace` | whether to include `linuxPackage.systemtap` |  `nixpkgs.stdenv.isLinux` | ❌ |
 | `withGrind` | whether to include `valgrind` | `true` | ❌ |
-| `withEMSDK` | whether to include `emscripten` for the js-backend | `false` | ❌ |
+| `withEMSDK` | whether to include `emscripten` for the js-backend, will create an `.emscripten_cache` folder in your working directory of the shell for writing. `EM_CACHE` is set to that path, prevents [sub word sized atomic](https://gitlab.haskell.org/ghc/ghc/-/wikis/javascript-backend/building#configure-fails-with-sub-word-sized-atomic-operations-not-available) kinds of issues | `false` | ❌ |
 
 ## `direnv`
 
