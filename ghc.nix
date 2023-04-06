@@ -37,6 +37,7 @@ args@{ system ? builtins.currentSystem
 , wasi-sdk
 , wasmtime
 , crossTarget ? null
+, crossTargetPkgs ? null # a `nixpkgs.pkgsCross` record, e.g. `riscv64`
 }:
 
 # Assert that args has only one of withWasm and withWasiSDK.
@@ -72,15 +73,19 @@ let
   };
 
   pkgs = import nixpkgs { inherit system; overlays = [ overlay ]; };
+  pkgs-cross = if crossTarget != null then pkgs.pkgsCross.${crossTarget} else null;
 in
 
 with pkgs;
 
 let
   llvmForGhc =
+    let
+      ps = if crossTarget == null then pkgs else pkgs-cross.buildPackages;
+    in
     if lib.versionAtLeast version "9.1"
-    then llvm_10
-    else llvm_9;
+    then ps.llvm_12
+    else ps.llvm_9;
 
   stdenv =
     if useClang
@@ -229,29 +234,56 @@ hspkgs.shellFor rec {
   # In particular, this makes many tests fail because those warnings show up in test outputs too...
   # The solution is from: https://github.com/NixOS/nix/issues/318#issuecomment-52986702
   LOCALE_ARCHIVE = if stdenv.isLinux then "${glibcLocales}/lib/locale/locale-archive" else "";
-  CONFIGURE_ARGS = [
-    "--with-gmp-includes=${gmp.dev}/include"
-    "--with-gmp-libraries=${gmp}/lib"
-    "--with-curses-includes=${ncurses.dev}/include"
-    "--with-curses-libraries=${ncurses.out}/lib"
-  ] ++ lib.optionals withNuma [
-    "--with-libnuma-includes=${numactl}/include"
-    "--with-libnuma-libraries=${numactl}/lib"
-  ] ++ lib.optionals withDwarf [
-    "--with-libdw-includes=${elfutils.dev}/include"
-    "--with-libdw-libraries=${elfutils.out}/lib"
-    "--enable-dwarf-unwind"
-  ] ++ lib.optionals withSystemLibffi [
-    "--with-system-libffi"
-    "--with-ffi-includes=${libffi.dev}/include"
-    "--with-ffi-libraries=${libffi.out}/lib"
-  ] ++ lib.optionals (crossTarget != null) [
-    "--target=${crossTarget}"
-  ];
+
+  CONFIGURE_ARGS =
+    if crossTargetPkgs == null then
+      [
+        "--with-gmp-includes=${gmp.dev}/include"
+        "--with-gmp-libraries=${gmp}/lib"
+        "--with-curses-includes=${ncurses.dev}/include"
+        "--with-curses-libraries=${ncurses.out}/lib"
+      ] ++ lib.optionals withNuma [
+        "--with-libnuma-includes=${numactl}/include"
+        "--with-libnuma-libraries=${numactl}/lib"
+      ] ++ lib.optionals withDwarf [
+        "--with-libdw-includes=${elfutils.dev}/include"
+        "--with-libdw-libraries=${elfutils.out}/lib"
+        "--enable-dwarf-unwind"
+      ]  ++ lib.optionals withSystemLibffi [
+        "--with-system-libffi"
+        "--with-ffi-includes=${libffi.dev}/include"
+        "--with-ffi-libraries=${libffi.out}/lib"
+      ]  ++ lib.optionals (crossTarget != null) [
+        "--target=${crossTarget}"
+      ] else [
+      "--with-gmp-includes=${pkgs-cross.gmp.dev}/include"
+      "--with-gmp-libraries=${pkgs-cross.gmp}/lib"
+      "--with-curses-includes=${pkgs-cross.ncurses.dev}/include"
+      "--with-curses-libraries=${pkgs-cross.ncurses.out}/lib"
+      "--host=${stdenv.hostPlatform.config}"
+      "--target=${pkgs-cross.stdenv.hostPlatform.config}"
+    ];
+
+
+  targetDependentShellHook =
+    if crossTargetPkgs == null then
+      ''
+        export CC=${stdenv.cc}/bin/cc
+      '' else
+      let
+        prefix = pkgs-cross.stdenv.cc.targetPrefix;
+      in
+      ''
+        # somehow, CC gets overridden so we set it again here.
+        export CC=${pkgs-cross.stdenv.cc}/bin/${prefix}cc
+        export CXX=${pkgs-cross.stdenv.cc}/bin/${prefix}c++
+        export AR=${pkgs-cross.stdenv.cc.bintools.bintools}/bin/${prefix}ar
+        export RANLIB=${pkgs-cross.stdenv.cc.bintools.bintools}/bin/${prefix}ranlib
+        export NM=${pkgs-cross.stdenv.cc.bintools.bintools}/bin/${prefix}nm
+        export LD=${pkgs-cross.stdenv.cc.bintools}/bin/${prefix}ld
+      '';
 
   shellHook = ''
-    # somehow, CC gets overridden so we set it again here.
-    export CC=${stdenv.cc}/bin/cc
     export GHC=$NIX_GHC
     export GHCPKG=$NIX_GHCPKG
     export HAPPY=${happy}/bin/happy
@@ -282,8 +314,10 @@ hspkgs.shellFor rec {
     # See https://gitlab.haskell.org/ghc/ghc-wasm-meta/-/blob/master/pkgs/wasi-sdk-setup-hook.sh
     ${lib.optionalString withWasm' "addWasiSDKHook"}
 
+    ${targetDependentShellHook}
     >&2 echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS:"
-    >&2 echo "or use the configure_ghc command):"
+    >&2 echo "or use the configure_ghc command - passing \$CONFIGURE_ARGS"
+    >&2 echo "itself to ./configure might not work):"
     >&2 echo ""
     >&2 echo "  ${lib.concatStringsSep "\n  " CONFIGURE_ARGS}"
   '';
