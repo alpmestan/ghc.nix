@@ -201,7 +201,7 @@ hspkgs.shellFor rec {
     export ALEX=${alex}/bin/alex
     ${lib.optionalString withEMSDK "export EMSDK=${emscripten}"}
     ${lib.optionalString withEMSDK "export EMSDK_LLVM=${emscripten}/bin/emscripten-llvm"}
-    ${ # prevents sub word sized atomic operations not avaialble issues
+    ${ # prevents sub word sized atomic operations not available issues
        # see: https://gitlab.haskell.org/ghc/ghc/-/wikis/javascript-backend/building#configure-fails-with-sub-word-sized-atomic-operations-not-available
       lib.optionalString withEMSDK ''
       cp -Lr ${emscripten}/share/emscripten/cache .emscripten_cache
