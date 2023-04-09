@@ -74,11 +74,9 @@ let
     else pkgs.stdenv;
   noTest = haskell.lib.dontCheck;
 
-  hspkgs = haskell.packages.${bootghc}.override {
-    inherit all-cabal-hashes;
-  };
+  hspkgs = pkgs-unstable.haskell.packages.${bootghc};
 
-  ghc = haskell.compiler.${bootghc};
+  ghc = pkgs-unstable.haskell.compiler.${bootghc};
 
   ourtexlive =
     pkgs.texlive.combine {
