@@ -116,7 +116,7 @@ let
     ++ optional withDwarf elfutils
     ++ optional withGhcid ghcid
     ++ optional withIde (pkgs-unstable.haskell-language-server.override { supportedGhcVersions = [ (builtins.replaceStrings [ "." ] [ "" ] ghc.version) ]; })
-    ++ optional withIde pkgs-unstable.clang-tools # N.B. clang-tools for clangd
+    ++ optional withIde clang-tools # N.B. clang-tools for clangd
     ++ optional withDtrace linuxPackages.systemtap
     ++ (if (! stdenv.isDarwin)
     then [ pxz ]
