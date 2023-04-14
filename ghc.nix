@@ -38,6 +38,8 @@ args@{ system ? builtins.currentSystem
 , wasmtime
 , crossTarget ? null
 , crossTargetPkgs ? null # a `nixpkgs.pkgsCross` record, e.g. `riscv64`
+, withQEMU ? false
+, withLlvmLit ? false # for llvm lit tests
 }:
 
 # Assert that args has only one of withWasm and withWasiSDK.
@@ -136,6 +138,7 @@ let
     ++ optional withIde hspkgs.haskell-language-server
     ++ optional withIde clang-tools # N.B. clang-tools for clangd
     ++ optional withDtrace linuxPackages.systemtap
+    ++ optional withLlvmLit lit
     ++ (if (! stdenv.isDarwin)
     then [ pxz ]
     else [
@@ -143,6 +146,12 @@ let
       darwin.libobjc
       darwin.apple_sdk.frameworks.Foundation
     ])
+    ++ optional withQEMU (
+      if crossTarget == null then
+        qemu
+      else
+        pkgsCross.${crossTarget}.buildPackages.buildPackages.qemu
+    )
   );
 
   happy =
