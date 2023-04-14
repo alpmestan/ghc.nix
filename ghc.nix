@@ -139,6 +139,7 @@ let
     ++ optional withIde clang-tools # N.B. clang-tools for clangd
     ++ optional withDtrace linuxPackages.systemtap
     ++ optional withLlvmLit lit
+    ++ optional withQEMU qemu
     ++ (if (! stdenv.isDarwin)
     then [ pxz ]
     else [
@@ -146,12 +147,6 @@ let
       darwin.libobjc
       darwin.apple_sdk.frameworks.Foundation
     ])
-    ++ optional withQEMU (
-      if crossTarget == null then
-        qemu
-      else
-        pkgsCross.${crossTarget}.buildPackages.buildPackages.qemu
-    )
   );
 
   happy =
