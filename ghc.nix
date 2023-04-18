@@ -86,8 +86,8 @@ let
       ps = if crossTarget == null then pkgs else pkgs-cross.buildPackages;
     in
     if lib.versionAtLeast version "9.1"
-    then ps.llvm_12
-    else ps.llvm_9;
+    then ps.llvmPackages_12
+    else ps.llvmPackages_9;
 
   stdenv =
     if useClang
@@ -128,7 +128,7 @@ let
       hlint
     ]
     ++ docsPackages
-    ++ optional withLlvm llvmForGhc
+    ++ optional withLlvm llvmForGhc.llvm
     ++ optional withGrind valgrind
     ++ optional withEMSDK emscripten
     ++ optionals withWasm' [ wasi-sdk wasmtime ]
@@ -138,7 +138,7 @@ let
     ++ optional withIde hspkgs.haskell-language-server
     ++ optional withIde clang-tools # N.B. clang-tools for clangd
     ++ optional withDtrace linuxPackages.systemtap
-    ++ optional withLlvmLit lit
+    ++ optionals withLlvmLit [ lit llvmForGhc.libllvm ]
     ++ optional withQEMU qemu
     ++ (if (! stdenv.isDarwin)
     then [ pxz ]
