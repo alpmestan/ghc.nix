@@ -1,6 +1,11 @@
 {
   description = "ghc.nix - the ghc devShell";
-  nixConfig.bash-prompt = "\\[\\e[34;1m\\]ghc.nix ~ \\[\\e[0m\\]";
+  nixConfig = {
+    bash-prompt = "\\[\\e[34;1m\\]ghc.nix ~ \\[\\e[0m\\]";
+    extra-substituters = [ "https://ghc-nix.cachix.org" ];
+    extra-trusted-public-keys = [ "ghc-nix.cachix.org-1:wI8l3tirheIpjRnr2OZh6YXXNdK2fVQeOI4SVz/X8nA=" ];
+  };
+
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
