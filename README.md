@@ -45,12 +45,13 @@ $ nix-shell ~/ghc.nix/shell.nix --run './boot && ./configure $CONFIGURE_ARGS && 
 # works with --pure too
 ```
 
-Note that we passed `$CONFIGURE_ARGS` to `./configure`. While this is
-technically optional, this argument ensures that `configure` knows where the
-compiler's dependencies (e.g. `gmp`, `libnuma`, `libdw`) are found, allowing
-the compiler to be used even outsite of `nix-shell`. For convenience, the
-`nix-shell` environment also exports a convenience command, `configure_ghc`,
-which invokes `configure` as indicated.
+> **Note**
+> We passed `$CONFIGURE_ARGS` to `./configure`. While this is
+> technically optional, this argument ensures that `configure` knows where the
+> compiler's dependencies (e.g. `gmp`, `libnuma`, `libdw`) are found, allowing
+> the compiler to be used even outsite of `nix-shell`. For convenience, the
+> `nix-shell` environment also exports a convenience command, `configure_ghc`,
+> which invokes `configure` as indicated.
 
 If you are using zsh, you must pass `${=CONFIGURE_ARGS}` instead; otherwise
 zsh will escape the spaces in `$CONFIGURE_ARGS` and interpret it as one single
@@ -94,7 +95,10 @@ nix-shell ~/.ghc.nix/shell.nix --arg withIde true
 $ nix-shell ~/ghc.nix/shell.nix --pure --run 'THREADS=4 ./validate'
 ```
 
-See other flags of `validate` by invoking `./validate --help` or just by reading its source code. Note that `./validate --slow` builds the compiler in debug mode which has the side-effect of disabling performance tests.
+See other flags of `validate` by invoking `./validate --help` or just by reading its source code.
+
+> **Note**
+> `./validate --slow` builds the compiler in debug mode which has the side-effect of disabling performance tests.
 
 ## Building and running for i686-linux from x86_64-linux
 
@@ -194,8 +198,9 @@ upon entering your local `ghc` directory. Just put a `.envrc` containing `use fl
 in the `ghc` directory. This works for all flake URLs, so you can also put `use flake github:alpmestan/ghc.nix#` in 
 there and it should work.
 
-(*Note*: at the time of writing `.direnv` is not part of the `.gitignore` in `ghc`, so be careful to not accidentally 
-check it out, it's the local cache of your development shell which makes loading it upon entering the directory instant)
+> **Warning**
+> at the time of writing `.direnv` is not part of the `.gitignore` in `ghc`, so be careful to not accidentally
+> check it out, it's the local cache of your development shell which makes loading it upon entering the directory instant)
 
 ## contributing
 
@@ -206,9 +211,3 @@ check it out, it's the local cache of your development shell which makes loading
   will also be checked before committing. You can skip the check by passing `--no-verify` to the `git commit` command
 - `ghc.nix` also offers `direnv` integration, so if you have it installed, just run `direnv allow` to automatically load the
   formatting `devShell` and the accompanying pre-commit hook.
-
-## TODO
-
-- We currently can't just invoke `nix-build` ([#1](https://github.com/alpmestan/ghc.nix/issues/1))
-- We do not support all the cross compilation machinery that
-  `head.nix` from nixpkgs supports.
