@@ -77,12 +77,12 @@ Or when you want to let nix fetch Hadrian dependencies enter the shell with
 $ nix-shell ~/ghc.nix/shell.nix --arg withHadrianDeps true
 ```
 
+## Using `haskell-language-server`
 
-## Using `ghcide`
-
-You can also use `ghc.nix` to provide the right version of `ghcide` if you
-want to use `ghcide` whilst developing on GHC. In order to do so, pass the `withIde`
-argument to your `nix-shell` invocation.
+You can also use `ghc.nix` to provide the right version of
+[`haskell-language-server` (`hls`)](https://github.com/haskell/haskell-language-server) if you
+want to use `hls` whilst developing on GHC. In order to do so, pass the `withIde`
+argument to your `nix-shell` invocation (the `nix` flake `devShell` enables `hls` by default).
 
 ```sh
 nix-shell ~/.ghc.nix/shell.nix --arg withIde true
