@@ -144,6 +144,9 @@ The cache contains Linux x64 binaries of all packages that are used during a def
 To format all nix code in this repository, run `nix fmt`, to enter a development shell, run `nix develop`.
 - To change the settings of the `devShell` to your liking, just adjust the `userSettings` attribute-set in the top-level flake.
 
+> **Warning**
+> Building a derivation from the local (ghc) hadrian requires `builtins.getEnv` which is only available if `--impure` is passed.
+
 ## Legacy nix-commands support
 
 We use `flake-compat` to ensure compatibility of the old nix commands with the new flake commands and to use the flake inputs pinned by 

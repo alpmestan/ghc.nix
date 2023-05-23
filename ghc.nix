@@ -5,18 +5,18 @@
 #   nix-shell path/to/ghc.nix/        --run 'THREADS=4 ./validate --slow'
 #
 let
-  pkgsFor = nixpkgs: system:
-    import nixpkgs { inherit system; overlays = [ ]; config = { }; };
-
+  pkgsFor = nixpkgs: system: nixpkgs.legacyPackages.${system};
+  hadrianPath =
+    if builtins.hasAttr "getEnv" builtins
+    then "${builtins.getEnv "PWD"}/hadrian/hadrian.cabal"
+    else null;
 in
-
 { system ? builtins.currentSystem
 , nixpkgs
-, nixpkgs-unstable
 , all-cabal-hashes
 , bootghc ? "ghc924"
 , version ? "9.3"
-, hadrianCabal ? (builtins.getEnv "PWD") + "/hadrian/hadrian.cabal"
+, hadrianCabal ? hadrianPath
 , useClang ? false  # use Clang for C compilation
 , withLlvm ? false
 , withDocs ? true
@@ -55,9 +55,6 @@ let
   };
 
   pkgs = import nixpkgs { inherit system; overlays = [ overlay ]; };
-
-  pkgs-unstable =
-    import nixpkgs-unstable { inherit system; overlays = [ overlay ]; };
 in
 
 with pkgs;
@@ -74,9 +71,9 @@ let
     else pkgs.stdenv;
   noTest = haskell.lib.dontCheck;
 
-  hspkgs = pkgs-unstable.haskell.packages.${bootghc};
+  hspkgs = pkgs.haskell.packages.${bootghc};
 
-  ghc = pkgs-unstable.haskell.compiler.${bootghc};
+  ghc = pkgs.haskell.compiler.${bootghc};
 
   ourtexlive =
     pkgs.texlive.combine {
@@ -115,7 +112,7 @@ let
     ++ optional withNuma numactl
     ++ optional withDwarf elfutils
     ++ optional withGhcid ghcid
-    ++ optional withIde (pkgs-unstable.haskell-language-server.override { supportedGhcVersions = [ (builtins.replaceStrings [ "." ] [ "" ] ghc.version) ]; })
+    ++ optional withIde (pkgs.haskell-language-server.override { supportedGhcVersions = [ (builtins.replaceStrings [ "." ] [ "" ] ghc.version) ]; })
     ++ optional withIde clang-tools # N.B. clang-tools for clangd
     ++ optional withDtrace linuxPackages.systemtap
     ++ (if (! stdenv.isDarwin)
@@ -143,14 +140,14 @@ let
 
   depsTools = [ happy alex hspkgs.cabal-install configureGhc validateGhc ];
 
-  hadrianCabalExists = builtins.pathExists hadrianCabal;
+  hadrianCabalExists = !(builtins.isNull hadrianCabal) && builtins.pathExists hadrianCabal;
   hsdrv =
     if (withHadrianDeps &&
       builtins.trace "checking if ${toString hadrianCabal} is present:  ${if hadrianCabalExists then "yes" else "no"}"
         hadrianCabalExists)
     then hspkgs.callCabal2nix "hadrian" hadrianCabal { }
     else
-      (hspkgs.mkDerivation rec {
+      (hspkgs.mkDerivation {
         inherit version;
         pname = "ghc-buildenv";
         license = "BSD";
