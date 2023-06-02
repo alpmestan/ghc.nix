@@ -28,6 +28,9 @@ in
 , withDtrace ? (pkgsFor nixpkgs system).stdenv.isLinux
 , withGrind ? !((pkgsFor nixpkgs system).valgrind.meta.broken or false)
 , withEMSDK ? false                    # load emscripten for js-backend
+, withWasiSDK ? false                  # load the toolchain for wasm backend
+, wasi-sdk ? null
+, wasmtime ? null
 }:
 
 let
@@ -109,6 +112,7 @@ let
     ++ optional withLlvm llvmForGhc
     ++ optional withGrind valgrind
     ++ optional withEMSDK emscripten
+    ++ optionals withWasiSDK [ wasi-sdk wasmtime ]
     ++ optional withNuma numactl
     ++ optional withDwarf elfutils
     ++ optional withGhcid ghcid
@@ -212,6 +216,8 @@ hspkgs.shellFor rec {
     unset LD
 
     ${lib.optionalString withDocs "export FONTCONFIG_FILE=${fonts}"}
+
+    ${lib.optionalString withWasiSDK "addWasiSDKHook"}
 
     >&2 echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS:"
     >&2 echo "or use the configure_ghc command):"

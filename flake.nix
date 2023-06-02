@@ -24,9 +24,11 @@
       inputs.nixpkgs-stable.follows = "nixpkgs";
       inputs.flake-compat.follows = "flake-compat";
     };
+
+    ghc-wasm-meta.url = "gitlab:ghc/ghc-wasm-meta?host=gitlab.haskell.org";
   };
 
-  outputs = { nixpkgs, all-cabal-hashes, pre-commit-hooks, ... }: with nixpkgs.lib; let
+  outputs = { nixpkgs, all-cabal-hashes, pre-commit-hooks, ghc-wasm-meta, ... }: with nixpkgs.lib; let
     supportedSystems =
       # allow nix flake show and nix flake check when passing --impure
       if builtins.hasAttr "currentSystem" builtins
@@ -37,6 +39,7 @@
     defaultSettings = system: {
       inherit nixpkgs system;
       all-cabal-hashes = all-cabal-hashes.outPath;
+      inherit (ghc-wasm-meta.outputs.packages."${system}") wasi-sdk wasmtime;
     };
 
     pre-commit-check = system: pre-commit-hooks.lib.${system}.run {
@@ -49,7 +52,7 @@
       };
     };
 
-    # NOTE: change this according to the settings allowed in the ./ghc.nix file and described 
+    # NOTE: change this according to the settings allowed in the ./ghc.nix file and described
     # in the `README.md`
     userSettings = {
       withHadrianDeps = true;
