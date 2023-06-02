@@ -13,7 +13,7 @@ To enter an environment without cloning this repository you can run:
 ```sh
 nix-shell https://github.com/alpmestan/ghc.nix/archive/master.tar.gz --attr devShells.<your-system>.default
 ```
-where `<your-system>` would be the nix name of your system, in the typical case this is one of 
+where `<your-system>` would be the nix name of your system, in the typical case this is one of
 - `x86_64-linux` (for `x86_64` Linux systems)
 - `aarch64-linux` (for ARM Linux systems)
 - `x86_64-darwin` (for old macs that do not have apple silicon)
@@ -24,7 +24,7 @@ Hence, an invocation on an `x86_64` Linux system would look like this:
 nix-shell https://github.com/alpmestan/ghc.nix/archive/master.tar.gz --attr devShells.x86_64-linux.default
 ```
 
-This repository is flakes enabled, which means, that you can more easily get a `devShell` using: 
+This repository is flakes enabled, which means, that you can more easily get a `devShell` using:
 
 ```sh
 nix develop github:alpmestan/ghc.nix
@@ -121,19 +121,19 @@ The cache contains Linux x64 binaries of all packages that are used during a def
 ## Updating `ghc.nix`
 
 - *to update everything*: `nix flake update`
-- *to update other inputs*: run `nix flake lock --update-input other-input-name` 
-- *available inputs*: 
+- *to update other inputs*: run `nix flake lock --update-input other-input-name`
+- *available inputs*:
   - `nixpkgs-unstable` (used to provide haskell-packages)
   - `nixpkgs` (used to provide some tooling, like texlive)
   - `flake-compat` (to ensure compatibility with pre-flake nix)
-  - `all-cabal-hashes` (for the cabal-hashes of the haskell packages used) 
-- *to use a certain commit for any of the inputs*: use flag `--override-input`, e.g. 
+  - `all-cabal-hashes` (for the cabal-hashes of the haskell packages used)
+- *to use a certain commit for any of the inputs*: use flag `--override-input`, e.g.
   ```sh
   nix develop --override-input all-cabal-hashes "github:commercialhaskell/all-cabal-hashes/f4b3c68d6b5b128503bc1139cfc66e0537bccedd"
-  ``` 
-  this is not yet support in `flake-compat` mode, you will have to manually set the version in the `flake.nix` by appending 
-  `/your-commit-hash` to the input you want to change, then running `nix flake lock --update-input input-you-want-to-update`. 
-  Of course you can also just manually pass your own `nixpkgs` version to the `shell.nix`, this will override the one 
+  ```
+  this is not yet support in `flake-compat` mode, you will have to manually set the version in the `flake.nix` by appending
+  `/your-commit-hash` to the input you want to change, then running `nix flake lock --update-input input-you-want-to-update`.
+  Of course you can also just manually pass your own `nixpkgs` version to the `shell.nix`, this will override the one
   provided by the flake.
 - if you plan to upstream your modifications to `ghc.nix`, don't forget to run the formatter using `nix fmt`
 
@@ -149,14 +149,14 @@ To format all nix code in this repository, run `nix fmt`, to enter a development
 
 ## Legacy nix-commands support
 
-We use `flake-compat` to ensure compatibility of the old nix commands with the new flake commands and to use the flake inputs pinned by 
-`nix` itself. Unfortunately there is a shortcoming of the current implementation of the flake nix commands that makes it so that you 
-cannot pass arguments to the `devShell`s. To ensure backwards compatibility, we call a function that we keep as flake output from the 
-`./shell.nix` file. Most importantly, this means that **the `shell.nix` in this repo doesn't behave like a normal `flake-compat` shell 
-but rather like a legacy `shell.nix` that can indeed be passed arguments**. 
+We use `flake-compat` to ensure compatibility of the old nix commands with the new flake commands and to use the flake inputs pinned by
+`nix` itself. Unfortunately there is a shortcoming of the current implementation of the flake nix commands that makes it so that you
+cannot pass arguments to the `devShell`s. To ensure backwards compatibility, we call a function that we keep as flake output from the
+`./shell.nix` file. Most importantly, this means that **the `shell.nix` in this repo doesn't behave like a normal `flake-compat` shell
+but rather like a legacy `shell.nix` that can indeed be passed arguments**.
 The `default.nix` behaves just like you would expect it to behave with the use of `flake-compat`.
 
-The following table shows what `./ghc.nix` can be configured with; the first column is the name of the attribute to be configured, the second 
+The following table shows what `./ghc.nix` can be configured with; the first column is the name of the attribute to be configured, the second
 argument the description of that argument, the third the default value for that argument and the third one, whether or not the `flake.nix`
 takes over orchestration of this attribute, this is the case if they're either pinned by the lock-file (e.g. `nixpkgs`) or can introduce impurity
 (e.g. `system`)
@@ -193,12 +193,13 @@ be careful to specify the path to the `shell.nix`, not to the `default.nix`.
 | `withDtrace` | whether to include `linuxPackage.systemtap` |  `nixpkgs.stdenv.isLinux` | ❌ |
 | `withGrind` | whether to include `valgrind` | `true` | ❌ |
 | `withEMSDK` | whether to include `emscripten` for the js-backend, will create an `.emscripten_cache` folder in your working directory of the shell for writing. `EM_CACHE` is set to that path, prevents [sub word sized atomic](https://gitlab.haskell.org/ghc/ghc/-/wikis/javascript-backend/building#configure-fails-with-sub-word-sized-atomic-operations-not-available) kinds of issues | `false` | ❌ |
+| `withWasiSDK` | whether to include `wasi-sdk` & `wasmtime` for the ghc wasm backend | `false` | ❌ |
 
 ## `direnv`
 
 With `nix-direnv` support, it is possible to make [`direnv`](https://github.com/direnv/direnv/) load `ghc.nix`
-upon entering your local `ghc` directory. Just put a `.envrc` containing `use flake /home/theUser/path/to/ghc.nix#` 
-in the `ghc` directory. This works for all flake URLs, so you can also put `use flake github:alpmestan/ghc.nix#` in 
+upon entering your local `ghc` directory. Just put a `.envrc` containing `use flake /home/theUser/path/to/ghc.nix#`
+in the `ghc` directory. This works for all flake URLs, so you can also put `use flake github:alpmestan/ghc.nix#` in
 there and it should work.
 
 > **Warning**
