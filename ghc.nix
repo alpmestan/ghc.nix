@@ -32,6 +32,7 @@ in
 , withWasiSDK ? false                  # load the toolchain for wasm backend
 , wasi-sdk
 , wasmtime
+, crossTarget ? null
 }:
 
 let
@@ -194,6 +195,8 @@ hspkgs.shellFor rec {
     "--with-system-libffi"
     "--with-ffi-includes=${libffi.dev}/include"
     "--with-ffi-libraries=${libffi.out}/lib"
+  ] ++ lib.optionals (crossTarget != null) [
+    "--target=${crossTarget}"
   ];
 
   shellHook = ''
