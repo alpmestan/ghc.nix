@@ -304,8 +304,8 @@ hspkgs.shellFor rec {
       >&2 echo "N.B. You will need to invoke Hadrian with --bignum=native"
       >&2 echo ""
     ''}
-    ${lib.optionalString withLlvm "export LLC=${llvmForGhc}/bin/llc"}
-    ${lib.optionalString withLlvm "export OPT=${llvmForGhc}/bin/opt"}
+    ${lib.optionalString withLlvm "export LLC=${llvmForGhc.llvm}/bin/llc"}
+    ${lib.optionalString withLlvm "export OPT=${llvmForGhc.llvm}/bin/opt"}
 
     # "nix-shell --pure" resets LANG to POSIX, this breaks "make TAGS".
     export LANG="en_US.UTF-8"
