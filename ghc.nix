@@ -142,8 +142,9 @@ let
     else noTest (hspkgs.callHackage "alex" "3.2.5" { });
 
   # Convenient tools
-  configureGhc = writeShellScriptBin "configure_ghc" "./configure $CONFIGURE_ARGS $@";
+  configureGhc = writeShellScriptBin "configure_ghc" "$CONFIGURE $CONFIGURE_ARGS $@";
   validateGhc = writeShellScriptBin "validate_ghc" "config_args='$CONFIGURE_ARGS' ./validate $@";
+
   depsTools = [
     happy
     alex
@@ -246,14 +247,19 @@ hspkgs.shellFor rec {
     export GHCPKG=$NIX_GHCPKG
     export HAPPY=${happy}/bin/happy
     export ALEX=${alex}/bin/alex
+    export CONFIGURE=configure
     ${lib.optionalString withEMSDK "export EMSDK=${emscripten}"}
     ${lib.optionalString withEMSDK "export EMSDK_LLVM=${emscripten}/bin/emscripten-llvm"}
     ${ # prevents sub word sized atomic operations not available issues
        # see: https://gitlab.haskell.org/ghc/ghc/-/wikis/javascript-backend/building#configure-fails-with-sub-word-sized-atomic-operations-not-available
       lib.optionalString withEMSDK ''
+      unset CC
+      CONFIGURE="emconfigure ./configure"
       cp -Lr ${emscripten}/share/emscripten/cache .emscripten_cache
       chmod u+rwX -R .emscripten_cache
       export EM_CACHE=.emscripten_cache
+      >&2 echo "N.B. You will need to invoke Hadrian with --bignum=native"
+      >&2 echo ""
     ''}
     ${lib.optionalString withLlvm "export LLC=${llvmForGhc}/bin/llc"}
     ${lib.optionalString withLlvm "export OPT=${llvmForGhc}/bin/opt"}
