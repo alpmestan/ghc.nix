@@ -27,6 +27,7 @@ in
 , withNuma ? (pkgsFor nixpkgs system).stdenv.isLinux
 , withDtrace ? (pkgsFor nixpkgs system).stdenv.isLinux
 , withGrind ? !((pkgsFor nixpkgs system).valgrind.meta.broken or false)
+, withSystemLibffi ? false
 , withEMSDK ? false                    # load emscripten for js-backend
 , withWasiSDK ? false                  # load the toolchain for wasm backend
 , wasi-sdk ? null
@@ -189,6 +190,10 @@ hspkgs.shellFor rec {
     "--with-libdw-includes=${elfutils.dev}/include"
     "--with-libdw-libraries=${elfutils.out}/lib"
     "--enable-dwarf-unwind"
+  ] ++ lib.optionals withSystemLibffi [
+    "--with-system-libffi"
+    "--with-ffi-includes=${libffi.dev}/include"
+    "--with-ffi-libraries=${libffi.out}/lib"
   ];
 
   shellHook = ''
