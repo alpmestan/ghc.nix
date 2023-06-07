@@ -4,6 +4,8 @@ This repository does not contain the GHC sources themselves, so make sure
 you've cloned that repository first. The directions at https://ghc.dev are
 an excellent place to start.
 
+[![CI](https://github.com/alpmestan/ghc.nix/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/alpmestan/ghc.nix/actions/workflows/ci.yml)
+
 # Simple usage
 
 ## Quickstart
@@ -123,7 +125,6 @@ The cache contains Linux x64 binaries of all packages that are used during a def
 - *to update everything*: `nix flake update`
 - *to update other inputs*: run `nix flake lock --update-input other-input-name`
 - *available inputs*:
-  - `nixpkgs-unstable` (used to provide haskell-packages)
   - `nixpkgs` (used to provide some tooling, like texlive)
   - `flake-compat` (to ensure compatibility with pre-flake nix)
   - `all-cabal-hashes` (for the cabal-hashes of the haskell packages used)
@@ -139,7 +140,7 @@ The cache contains Linux x64 binaries of all packages that are used during a def
 
 ## Flake support
 
-`ghc.nix` now also has basic flake support, `nixpkgs`, `nixpkgs-unstable` and the `cabal-hashes` are pinned in the flake inputs.
+`ghc.nix` now also has basic flake support, `nixpkgs` and the `cabal-hashes` are pinned in the flake inputs.
 
 To format all nix code in this repository, run `nix fmt`, to enter a development shell, run `nix develop`.
 - To change the settings of the `devShell` to your liking, just adjust the `userSettings` attribute-set in the top-level flake.
@@ -177,7 +178,6 @@ be careful to specify the path to the `shell.nix`, not to the `default.nix`.
 | -- | -- | -- | -- |
 | `system` | the system this is run on | `builtins.currentSystem` or flake system | ✅ |
 | `nixpkgs` | the stable `nixpkgs` set used | `nixpkgs` as pinned in the lock-file | ✅ |
-| `nixpkgs-unstable` | the unstable `nixpkgs` set used | `nixpkgs-unstable` as pinned in the lock-file | ✅ |
 | `all-cabal-hashes` | the `all-cabal-hashes` version used | `all-cabal-hashes` as pinned in the lock-file | ✅ |
 | `bootghc` | the bootstrap `ghc` version | `"ghc924"` | ❌ |
 | `version` | the version of `ghc` to be bootstrapped | `"9.3"` | ❌ |
@@ -203,8 +203,10 @@ in the `ghc` directory. This works for all flake URLs, so you can also put `use 
 there and it should work.
 
 > **Warning**
-> at the time of writing `.direnv` is not part of the `.gitignore` in `ghc`, so be careful to not accidentally
-> check it out, it's the local cache of your development shell which makes loading it upon entering the directory instant)
+> If you're building an older GHC
+> ([not including this commit](https://gitlab.haskell.org/MangoIV/ghc/-/commit/be95cc85e25e9f60434d6f0d97fc3a2deae0f909)),
+> be careful about not checking out `.direnv`,  it's the local cache of your development shell which makes loading it
+> upon entering the directory instant.
 
 ## contributing
 

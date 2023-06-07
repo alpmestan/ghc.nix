@@ -14,7 +14,7 @@ in
 { system ? builtins.currentSystem
 , nixpkgs
 , all-cabal-hashes
-, bootghc ? "ghc924"
+, bootghc ? "ghc927"
 , version ? "9.3"
 , hadrianCabal ? hadrianPath
 , useClang ? false  # use Clang for C compilation
@@ -77,8 +77,6 @@ let
 
   hspkgs = pkgs.haskell.packages.${bootghc};
 
-  ghc = pkgs.haskell.compiler.${bootghc};
-
   ourtexlive =
     pkgs.texlive.combine {
       inherit (pkgs.texlive)
@@ -117,7 +115,7 @@ let
     ++ optional withNuma numactl
     ++ optional withDwarf elfutils
     ++ optional withGhcid ghcid
-    ++ optional withIde (pkgs.haskell-language-server.override { supportedGhcVersions = [ (builtins.replaceStrings [ "." ] [ "" ] ghc.version) ]; })
+    ++ optional withIde hspkgs.haskell-language-server
     ++ optional withIde clang-tools # N.B. clang-tools for clangd
     ++ optional withDtrace linuxPackages.systemtap
     ++ (if (! stdenv.isDarwin)
@@ -163,6 +161,8 @@ let
           QuickCheck
           shake
           unordered-containers
+          cryptohash-sha256
+          base16-bytestring
         ];
         librarySystemDepends = depsSystem;
       });
