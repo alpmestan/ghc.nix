@@ -30,8 +30,8 @@ in
 , withSystemLibffi ? false
 , withEMSDK ? false                    # load emscripten for js-backend
 , withWasiSDK ? false                  # load the toolchain for wasm backend
-, wasi-sdk ? null
-, wasmtime ? null
+, wasi-sdk
+, wasmtime
 }:
 
 let
