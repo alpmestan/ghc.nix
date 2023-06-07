@@ -110,6 +110,19 @@ It's trivial!
 $ nix-shell ~/ghc.nix/shell.nix --arg nixpkgs '(import <nixpkgs> {}).pkgsi686Linux'
 ```
 
+## Building a WebAsm cross-compiler
+
+Enter a developer shell with nix develop ~/ghc.nix#wasi-cross (it will override
+`CC`, `CONFIGURE_ARGS`, etc. environment variables to configure the cross-compiler)
+and then:
+
+```sh
+$ nix develop ~/ghc.nix#wasi-cross
+$ ./boot
+$ configure_ghc
+$ hadrian/build-cabal --docs=none
+```
+
 ## Cachix
 
 There is a Cachix cache ([ghc-nix](https://app.cachix.org/cache/ghc-nix)) which is filled by our CI. To use it, run the following command and follow the instructions:

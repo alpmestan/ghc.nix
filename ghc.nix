@@ -252,6 +252,7 @@ hspkgs.shellFor rec {
 
     ${lib.optionalString withDocs "export FONTCONFIG_FILE=${fonts}"}
 
+    # N.B. This overrides CC, CONFIGURE_ARGS, etc. to configure the cross-compiler.
     ${lib.optionalString withWasiSDK "addWasiSDKHook"}
 
     >&2 echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS:"
