@@ -64,6 +64,11 @@
       default = ghc-nix;
       ghc-nix = import ./ghc.nix (defaultSettings system // userSettings);
       wasi-cross = import ./ghc.nix (defaultSettings system // userSettings // { withWasiSDK = true; });
+      js-cross = import ./ghc.nix (defaultSettings system // userSettings // {
+        crossTarget = "javascript-unknown-ghcjs";
+        withEMSDK = true;
+        withDwarf = false;
+      });
 
       formatting = nixpkgs.legacyPackages.${system}.mkShell {
         inherit (pre-commit-check system) shellHook;
