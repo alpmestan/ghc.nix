@@ -33,8 +33,8 @@ in
 , withFindNoteDef ? true              # install a shell script `find_note_def`;
   # `find_note_def "Adding a language extension"`
   # will point to the definition of the Note "Adding a language extension"
-, wasi-sdk ? null
-, wasmtime ? null
+, wasi-sdk
+, wasmtime
 }:
 
 let
