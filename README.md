@@ -194,6 +194,7 @@ be careful to specify the path to the `shell.nix`, not to the `default.nix`.
 | `withGrind` | whether to include `valgrind` | `true` | ❌ |
 | `withEMSDK` | whether to include `emscripten` for the js-backend, will create an `.emscripten_cache` folder in your working directory of the shell for writing. `EM_CACHE` is set to that path, prevents [sub word sized atomic](https://gitlab.haskell.org/ghc/ghc/-/wikis/javascript-backend/building#configure-fails-with-sub-word-sized-atomic-operations-not-available) kinds of issues | `false` | ❌ |
 | `withWasiSDK` | whether to include `wasi-sdk` & `wasmtime` for the ghc wasm backend | `false` | ❌ |
+| `withFindNoteDef` | install a shell script `find_note_def`; `find_note_def "Adding a language extension"` will point to the definition of the Note "Adding a language extension" | `true` | ❌ |
 
 ## `direnv`
 

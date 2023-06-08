@@ -30,6 +30,9 @@ in
 , withSystemLibffi ? false
 , withEMSDK ? false                    # load emscripten for js-backend
 , withWasiSDK ? false                  # load the toolchain for wasm backend
+, withFindNoteDef ? true              # install a shell script `find_note_def`;
+  # `find_note_def "Adding a language extension"`
+  # will point to the definition of the Note "Adding a language extension"
 , wasi-sdk ? null
 , wasmtime ? null
 }:
@@ -137,11 +140,18 @@ let
     then noTest (hspkgs.callHackage "alex" "3.2.6" { })
     else noTest (hspkgs.callHackage "alex" "3.2.5" { });
 
-  # A convenient shortcut
+  # Convenient tools
   configureGhc = writeShellScriptBin "configure_ghc" "./configure $CONFIGURE_ARGS $@";
   validateGhc = writeShellScriptBin "validate_ghc" "config_args='$CONFIGURE_ARGS' ./validate $@";
-
-  depsTools = [ happy alex hspkgs.cabal-install configureGhc validateGhc ];
+  depsTools = [
+    happy
+    alex
+    hspkgs.cabal-install
+    configureGhc
+    validateGhc
+  ]
+  ++ lib.optional withFindNoteDef findNoteDef
+  ;
 
   hadrianCabalExists = !(builtins.isNull hadrianCabal) && builtins.pathExists hadrianCabal;
   hsdrv =
@@ -166,6 +176,26 @@ let
         ];
         librarySystemDepends = depsSystem;
       });
+
+  findNoteDef = writeShellScriptBin "find_note_def" ''
+    ret=$(${pkgs.ripgrep}/bin/rg  --no-messages --vimgrep -i --engine pcre2 "^ ?[{\\-#*]* *\QNote [$1]\E\s*$")
+    n_defs=$(echo "$ret" | sed '/^$/d' | wc -l)
+    while IFS= read -r line; do
+      if [[ $line =~ ^([^:]+) ]] ; then
+        file=''${BASH_REMATCH[1]}
+        if [[ $line =~ hs:([0-9]+): ]] ; then
+          pos=''${BASH_REMATCH[1]}
+          if cat $file | head -n $(($pos+1)) | tail -n 1 | grep --quiet "~~~" ; then
+            echo $file:$pos
+          fi
+        fi
+      fi
+    done <<< "$ret"
+    if [[ $n_defs -ne 1 ]]; then
+      exit 42
+    fi
+    exit 0
+  '';
 in
 hspkgs.shellFor rec {
   packages = _pkgset: [ hsdrv ];
