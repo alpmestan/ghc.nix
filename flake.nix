@@ -36,6 +36,8 @@
       else nixpkgs.lib.systems.flakeExposed;
     perSystem = genAttrs supportedSystems;
 
+    lib = { inherit supportedSystems perSystem; };
+
     defaultSettings = system: {
       inherit nixpkgs system;
       all-cabal-hashes = all-cabal-hashes.outPath;
@@ -76,5 +78,17 @@
 
     # NOTE: this attribute is used by the flake-compat code to allow passing arguments to ./ghc.nix
     legacy = args: import ./ghc.nix (defaultSettings args.system // args);
+
+    templates.default = {
+      path = ./template;
+      description = "Quickly apply settings from flakes";
+      welcomeText = ''
+        Welcome to ghc.nix!
+        Set your settings in the `userSettings` attributeset in the `flake.nix`.
+        Learn more about available arguments at https://github.com/alpmestan/ghc.nix/
+      '';
+    };
+
+    inherit lib;
   };
 }
