@@ -147,6 +147,22 @@ To format all nix code in this repository, run `nix fmt`, to enter a development
 > **Warning**
 > Building a derivation from the local (ghc) hadrian requires `builtins.getEnv` which is only available if `--impure` is passed.
 
+
+### Using the flake template
+
+It is common that you want to change the settings that `ghc.nix` uses to set up a `devShell`. Currently there is
+no good way in `nix` to pass `nix` expressions to flakes.
+
+This is why we provide a flake template that you can add to your git worktree as follows:
+```sh
+$ nix flake init -t github:alpmestan/ghc.nix
+```
+
+This will add three files to your worktree:
+- a `flake.nix` which you can edit your `userSettings` in as usual
+- a `flake.lock` file which pins the `ghc.nix` version and transitively `nixpkgs` and `all-cabal-hashes`
+- a `.envrc` file for convenient use with `direnv`
+
 ## Legacy nix-commands support
 
 We use `flake-compat` to ensure compatibility of the old nix commands with the new flake commands and to use the flake inputs pinned by
