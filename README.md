@@ -41,12 +41,17 @@ to `~/ghc.nix`. `shell.nix` has many parameters, all
 of them optional. You should take a look at `ghc.nix`
 for more details.
 
-
 ```sh
-$ echo "BuildFlavour = quick" > mk/build.mk
-$ cat mk/build.mk.sample >> mk/build.mk
-$ nix-shell ~/ghc.nix/shell.nix --run './boot && ./configure $CONFIGURE_ARGS && make -j4'
-# works with --pure too
+$ nix-shell ~/ghc.nix/shell.nix
+# from the nix shell:
+$ ./boot && ./configure $CONFIGURE_ARGS # In zsh, use ${=CONFIGURE_ARGS}
+# example hadrian command: use 4 cores, build a 'quickest' flavoured GHC
+# and place all the build artifacts under ./_mybuild/.
+$ hadrian/build -j4 --flavour=quickest --build-root=_mybuild
+
+# if you have never used cabal-install on your machine, you will likely
+# need to run the following before the hadrian command:
+$ cabal update
 ```
 
 > **Note**
@@ -61,26 +66,13 @@ If you are using zsh, you must pass `${=CONFIGURE_ARGS}` instead; otherwise
 zsh will escape the spaces in `$CONFIGURE_ARGS` and interpret it as one single
 argument. See also https://unix.stackexchange.com/a/19533/61132.
 
-You can alternatively use Hadrian to build GHC:
-
-```sh
-$ nix-shell ~/ghc.nix/shell.nix
-# from the nix shell:
-$ ./boot && ./configure $CONFIGURE_ARGS # In zsh, use ${=CONFIGURE_ARGS}
-# example hadrian command: use 4 cores, build a 'quickest' flavoured GHC
-# and place all the build artifacts under ./_mybuild/.
-$ hadrian/build -j4 --flavour=quickest --build-root=_mybuild
-
-# if you have never used cabal-install on your machine, you will likely
-# need to run the following before the hadrian command:
-$ cabal update
-```
-
-Or when you want to let nix fetch Hadrian dependencies enter the shell with
+When you want to let Nix fetch Hadrian dependencies enter the shell with
 
 ```sh
 $ nix-shell ~/ghc.nix/shell.nix --arg withHadrianDeps true
 ```
+
+When using flakes, this argument is automatically applied.
 
 ## Using `haskell-language-server`
 
@@ -93,12 +85,12 @@ argument to your `nix-shell` invocation.
 nix-shell ~/.ghc.nix/shell.nix --arg withIde true
 ```
 
-### With flakes
+When using flakes, this argument is also automatically applied.
 
-The `nix` flake `devShell` enables `hls` by default.
 
 ```sh
-nix develop github:alpmestan/ghc.nix
+$ nix develop github:alpmestan/ghc.nix
+# hls is already available
 ```
 
 ## Running `./validate`
@@ -150,7 +142,7 @@ $ configure_ghc
 $ hadrian/build-cabal --docs=none
 ```
 
-HLS should also just work.
+hls should also just work.
 
 ## Cachix
 
