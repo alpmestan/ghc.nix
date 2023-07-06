@@ -26,6 +26,8 @@ Hence, an invocation on an `x86_64` Linux system would look like this:
 nix-shell https://github.com/alpmestan/ghc.nix/archive/master.tar.gz --attr devShells.x86_64-linux.default
 ```
 
+### Using flakes
+
 This repository is flakes enabled, which means, that you can more easily get a `devShell` using:
 
 ```sh
@@ -39,32 +41,10 @@ to `~/ghc.nix`. `shell.nix` has many parameters, all
 of them optional. You should take a look at `ghc.nix`
 for more details.
 
-
-```sh
-$ echo "BuildFlavour = quick" > mk/build.mk
-$ cat mk/build.mk.sample >> mk/build.mk
-$ nix-shell ~/ghc.nix/shell.nix --run './boot && ./configure $CONFIGURE_ARGS && make -j4'
-# works with --pure too
-```
-
-> **Note**
-> We passed `$CONFIGURE_ARGS` to `./configure`. While this is
-> technically optional, this argument ensures that `configure` knows where the
-> compiler's dependencies (e.g. `gmp`, `libnuma`, `libdw`) are found, allowing
-> the compiler to be used even outsite of `nix-shell`. For convenience, the
-> `nix-shell` environment also exports a convenience command, `configure_ghc`,
-> which invokes `configure` as indicated.
-
-If you are using zsh, you must pass `${=CONFIGURE_ARGS}` instead; otherwise
-zsh will escape the spaces in `$CONFIGURE_ARGS` and interpret it as one single
-argument. See also https://unix.stackexchange.com/a/19533/61132.
-
-You can alternatively use Hadrian to build GHC:
-
 ```sh
 $ nix-shell ~/ghc.nix/shell.nix
 # from the nix shell:
-$ ./boot && ./configure $CONFIGURE_ARGS # In zsh, use ${=CONFIGURE_ARGS}
+$ ./boot && configure_ghc
 # example hadrian command: use 4 cores, build a 'quickest' flavoured GHC
 # and place all the build artifacts under ./_mybuild/.
 $ hadrian/build -j4 --flavour=quickest --build-root=_mybuild
@@ -74,21 +54,44 @@ $ hadrian/build -j4 --flavour=quickest --build-root=_mybuild
 $ cabal update
 ```
 
-Or when you want to let nix fetch Hadrian dependencies enter the shell with
+> **Note**
+>
+> `configure_ghc` runs `./configure $CONFIGURE_ARGS`. While this is technically
+> optional, this argument ensures that `configure` knows where the compiler's
+> dependencies (e.g. `gmp`, `libnuma`, `libdw`) are found, allowing the compiler
+> to be used even outsite of `nix-shell`. Plus, for the JavaScript cross
+> compiler, `configure_ghc` actually runs the wrapper `emconfigure`!
+>
+> If you are using zsh and you want to run `./configure` directly, you must pass
+> `${=CONFIGURE_ARGS}` instead; otherwise zsh will escape the spaces in
+> `$CONFIGURE_ARGS` and interpret it as one single argument. See also
+> https://unix.stackexchange.com/a/19533/61132.
+
+When you want to let Nix fetch Hadrian dependencies enter the shell with
 
 ```sh
 $ nix-shell ~/ghc.nix/shell.nix --arg withHadrianDeps true
 ```
+
+When using flakes, this argument is automatically applied.
 
 ## Using `haskell-language-server`
 
 You can also use `ghc.nix` to provide the right version of
 [`haskell-language-server` (`hls`)](https://github.com/haskell/haskell-language-server) if you
 want to use `hls` whilst developing on GHC. In order to do so, pass the `withIde`
-argument to your `nix-shell` invocation (the `nix` flake `devShell` enables `hls` by default).
+argument to your `nix-shell` invocation.
 
 ```sh
 nix-shell ~/.ghc.nix/shell.nix --arg withIde true
+```
+
+When using flakes, this argument is also automatically applied.
+
+
+```sh
+$ nix develop github:alpmestan/ghc.nix
+# HLS is already available
 ```
 
 ## Running `./validate`
@@ -110,17 +113,47 @@ It's trivial!
 $ nix-shell ~/ghc.nix/shell.nix --arg nixpkgs '(import <nixpkgs> {}).pkgsi686Linux'
 ```
 
-## Building a WebAsm cross-compiler
+## Building a WebAsm or JavaScript cross-compiler
 
-Enter a developer shell with nix develop ~/ghc.nix#wasi-cross (it will override
-`CC`, `CONFIGURE_ARGS`, etc. environment variables to configure the cross-compiler)
-and then:
+Both cross-compilers are supported with `nix-shell` or the flake-based `nix develop`.
+
+`CC`, `CONFIGURE_ARGS`, etc. environment variables will be overridden to configure the cross-compiler.
+
+HLS should also just work.
+
+### For WebAsm:
 
 ```sh
-$ nix develop ~/ghc.nix#wasi-cross
+nix-shell ~/ghc.nix --arg withWasiSDK true
+# or
+nix develop github:alpmestan/ghc.nix#wasi-cross
+```
+
+Once in the shell,
+
+```sh
 $ ./boot
 $ configure_ghc
-$ hadrian/build-cabal --docs=none
+$ hadrian/build --docs=none
+# or for a faster experience,
+$ hadrian/build -j4 --flavour=quick+no_profiled_libs --docs=none
+```
+
+### For JavaScript:
+
+```sh
+nix-shell ~/ghc.nix --arg withEMSDK true
+# or
+nix develop github:alpmestan/ghc.nix#js-cross
+```
+
+**Note** for the JavaScript backend, use `bignum=native` or the `native_bignum`
+transformer.
+
+```sh
+$ ./boot
+$ configure_ghc
+$ hadrian/build -j4 --flavour=quick+no_profiled_libs+native_bignum --docs=none
 ```
 
 ## Cachix
