@@ -70,6 +70,7 @@
 
       formatting = nixpkgs.legacyPackages.${system}.mkShell {
         inherit (pre-commit-check system) shellHook;
+        buildInputs = [ nixpkgs.legacyPackages.${system}.nil ];
       };
     });
 
