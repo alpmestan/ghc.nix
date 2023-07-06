@@ -26,6 +26,8 @@ Hence, an invocation on an `x86_64` Linux system would look like this:
 nix-shell https://github.com/alpmestan/ghc.nix/archive/master.tar.gz --attr devShells.x86_64-linux.default
 ```
 
+### Using flakes
+
 This repository is flakes enabled, which means, that you can more easily get a `devShell` using:
 
 ```sh
@@ -85,10 +87,18 @@ $ nix-shell ~/ghc.nix/shell.nix --arg withHadrianDeps true
 You can also use `ghc.nix` to provide the right version of
 [`haskell-language-server` (`hls`)](https://github.com/haskell/haskell-language-server) if you
 want to use `hls` whilst developing on GHC. In order to do so, pass the `withIde`
-argument to your `nix-shell` invocation (the `nix` flake `devShell` enables `hls` by default).
+argument to your `nix-shell` invocation.
 
 ```sh
 nix-shell ~/.ghc.nix/shell.nix --arg withIde true
+```
+
+### With flakes
+
+The `nix` flake `devShell` enables `hls` by default.
+
+```sh
+nix develop github:alpmestan/ghc.nix
 ```
 
 ## Running `./validate`
@@ -110,18 +120,37 @@ It's trivial!
 $ nix-shell ~/ghc.nix/shell.nix --arg nixpkgs '(import <nixpkgs> {}).pkgsi686Linux'
 ```
 
-## Building a WebAsm cross-compiler
+## Building a WebAsm or JavaScript cross-compiler
 
-Enter a developer shell with nix develop ~/ghc.nix#wasi-cross (it will override
-`CC`, `CONFIGURE_ARGS`, etc. environment variables to configure the cross-compiler)
-and then:
+Both cross-compilers are supported with `nix-shell` or the flake-based `nix develop`.
+
+For WebAsm:
 
 ```sh
-$ nix develop ~/ghc.nix#wasi-cross
+nix-shell ~/ghc.nix --arg withWasiSDK true
+# or
+nix develop github:alpmestan/ghc.nix#wasi-cross
+```
+
+For JavaScript:
+
+```sh
+nix-shell ~/ghc.nix --arg withEMSDK true
+# or
+nix develop github:alpmestan/ghc.nix#js-cross
+```
+
+These will override `CC`, `CONFIGURE_ARGS`, etc. environment variables to configure the cross-compiler.
+
+Once in the shell,
+
+```sh
 $ ./boot
 $ configure_ghc
 $ hadrian/build-cabal --docs=none
 ```
+
+HLS should also just work.
 
 ## Cachix
 
