@@ -255,9 +255,7 @@ hspkgs.shellFor rec {
       lib.optionalString withEMSDK ''
       unset CC
       CONFIGURE="emconfigure ./configure"
-      cp -Lr ${emscripten}/share/emscripten/cache .emscripten_cache
-      chmod u+rwX -R .emscripten_cache
-      export EM_CACHE=.emscripten_cache
+      export EM_CACHE=$(mktemp -d)
       >&2 echo "N.B. You will need to invoke Hadrian with --bignum=native"
       >&2 echo ""
     ''}
