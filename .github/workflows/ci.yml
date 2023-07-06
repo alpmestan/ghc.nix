@@ -43,7 +43,7 @@ jobs:
           name: ghc-nix
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
 
-      - name: Check nix flake 
+      - name: Check nix flake
         run: nix flake check ghc.nix# -Lv --impure --fallback
 
       - name: Run nix-shell - Boot and Configure
@@ -75,3 +75,41 @@ jobs:
 
       - name: Run nix develop - Test GHC (by running a testsuite subset)
         run: nix develop -Lv --fallback ghc.nix# -c bash -c "hadrian/build -j --flavour=quickest test --test-root-dirs=testsuite/tests/programs"
+
+  cross_compiler_smoketest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prepare git
+        run:
+          git config --global url."git://github.com/ghc/packages-".insteadOf     git://github.com/ghc/packages/ &&
+          git config --global url."http://github.com/ghc/packages-".insteadOf    http://github.com/ghc/packages/ &&
+          git config --global url."https://github.com/ghc/packages-".insteadOf   https://github.com/ghc/packages/ &&
+          git config --global url."ssh://git@github.com/ghc/packages-".insteadOf ssh://git@github.com/ghc/packages/ &&
+          git config --global url."git@github.com:ghc/packages-".insteadOf       git@github.com:ghc/packages/
+
+      - name: Checkout GHC
+        uses: actions/checkout@v2.4.0
+        with:
+          repository: ghc/ghc
+          submodules: recursive
+
+      - name: Checkout ghc.nix
+        uses: actions/checkout@v2.4.0
+        with:
+          path: ghc.nix
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v20
+
+      - name: Use cachix
+        uses: cachix/cachix-action@v12
+        with:
+          name: ghc-nix
+          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
+
+      - name: "wasi-cross: Run nix develop - Boot and Configure"
+        run: nix develop -Lv --fallback ghc.nix#wasi-cross -c bash -c "./boot && configure_ghc"
+
+      - name: "js-cross: Run nix develop - Boot and Configure"
+        run: nix develop -Lv --fallback ghc.nix#js-cross -c bash -c "./boot && configure_ghc"
