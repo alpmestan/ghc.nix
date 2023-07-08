@@ -119,6 +119,8 @@ Both cross-compilers are supported with `nix-shell` or the flake-based `nix deve
 
 `CC`, `CONFIGURE_ARGS`, etc. environment variables will be overridden to configure the cross-compiler.
 
+Once in the shell, use `./boot && configure_ghc`, then proceed with hadrian as usual.
+
 HLS should also just work.
 
 ### For WebAsm:
@@ -127,16 +129,6 @@ HLS should also just work.
 nix-shell ~/ghc.nix --arg withWasiSDK true
 # or
 nix develop github:alpmestan/ghc.nix#wasi-cross
-```
-
-Once in the shell,
-
-```sh
-$ ./boot
-$ configure_ghc
-$ hadrian/build --docs=none
-# or for a faster experience,
-$ hadrian/build -j4 --flavour=quick+no_profiled_libs --docs=none
 ```
 
 ### For JavaScript:
@@ -149,12 +141,6 @@ nix develop github:alpmestan/ghc.nix#js-cross
 
 **Note** for the JavaScript backend, use `bignum=native` or the `native_bignum`
 transformer.
-
-```sh
-$ ./boot
-$ configure_ghc
-$ hadrian/build -j4 --flavour=quick+no_profiled_libs+native_bignum --docs=none
-```
 
 ## Cachix
 
