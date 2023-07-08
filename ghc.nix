@@ -247,7 +247,7 @@ hspkgs.shellFor rec {
     export GHCPKG=$NIX_GHCPKG
     export HAPPY=${happy}/bin/happy
     export ALEX=${alex}/bin/alex
-    export CONFIGURE=configure
+    export CONFIGURE=./configure
     ${lib.optionalString withEMSDK "export EMSDK=${emscripten}"}
     ${lib.optionalString withEMSDK "export EMSDK_LLVM=${emscripten}/bin/emscripten-llvm"}
     ${ # prevents sub word sized atomic operations not available issues
