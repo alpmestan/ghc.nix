@@ -14,8 +14,8 @@ in
 { system ? builtins.currentSystem
 , nixpkgs
 , all-cabal-hashes
-, bootghc ? "ghc927"
-, version ? "9.3"
+, bootghc ? "ghc96"
+, version ? "9.9"
 , hadrianCabal ? hadrianPath
 , useClang ? false  # use Clang for C compilation
 , withLlvm ? false
