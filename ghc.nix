@@ -158,7 +158,17 @@ let
     if (withHadrianDeps &&
       builtins.trace "checking if ${toString hadrianCabal} is present:  ${if hadrianCabalExists then "yes" else "no"}"
         hadrianCabalExists)
-    then hspkgs.callCabal2nix "hadrian" hadrianCabal { }
+    then
+      hspkgs.callCabal2nix "hadrian" hadrianCabal
+        (
+          let
+            guessedGhcSrcDir = dirOf (dirOf hadrianCabal);
+          in
+          rec {
+            ghc-platform = hspkgs.callCabal2nix "ghc-platform" (/. + guessedGhcSrcDir + "/libraries/ghc-platform") { };
+            ghc-toolchain = hspkgs.callCabal2nix "ghc-toolchain" (/. + guessedGhcSrcDir + "/utils/ghc-toolchain") { inherit ghc-platform; };
+          }
+        )
     else
       (hspkgs.mkDerivation {
         inherit version;
