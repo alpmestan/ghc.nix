@@ -158,7 +158,13 @@ let
     if (withHadrianDeps &&
       builtins.trace "checking if ${toString hadrianCabal} is present:  ${if hadrianCabalExists then "yes" else "no"}"
         hadrianCabalExists)
-    then hspkgs.callCabal2nix "hadrian" hadrianCabal { }
+    then
+      hspkgs.callCabal2nix "hadrian" hadrianCabal
+        {
+          # HACK: These dependencies are not in nixpkgs/hackage, but cabal2nix produces a function that expects them.
+          ghc-platform = hspkgs.shake;
+          ghc-toolchain = hspkgs.shake;
+        }
     else
       (hspkgs.mkDerivation {
         inherit version;
