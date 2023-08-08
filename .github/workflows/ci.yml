@@ -108,8 +108,13 @@ jobs:
           name: ghc-nix
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
 
-      - name: "wasi-cross: Run nix develop - Boot and Configure"
-        run: nix develop -Lv --fallback ghc.nix#wasi-cross -c bash -c "./boot && configure_ghc"
+      - name: "wasm-cross: Run nix develop - Boot and Configure"
+        run:
+          nix develop -Lv --fallback ghc.nix#wasm-cross -c bash -c "./boot && configure_ghc"
+
+      - name: "wasm-cross: Check backward compat synonym"
+        run:
+          nix develop -Lv --fallback ghc.nix#wasi-cross -c true
 
       - name: "js-cross: Run nix develop - Boot and Configure"
         run: nix develop -Lv --fallback ghc.nix#js-cross -c bash -c "./boot && configure_ghc"

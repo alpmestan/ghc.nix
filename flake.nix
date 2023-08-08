@@ -65,7 +65,9 @@
     devShells = perSystem (system: rec {
       default = ghc-nix;
       ghc-nix = import ./ghc.nix (defaultSettings system // userSettings);
-      wasi-cross = import ./ghc.nix (defaultSettings system // userSettings // { withWasiSDK = true; });
+      wasm-cross = import ./ghc.nix (defaultSettings system // userSettings // { withWasm = true; });
+      # Backward compat synonym
+      wasi-cross = wasm-cross;
       js-cross = import ./ghc.nix (defaultSettings system // userSettings // {
         crossTarget = "javascript-unknown-ghcjs";
         withEMSDK = true;

@@ -11,7 +11,7 @@ let
     then "${builtins.getEnv "PWD"}/hadrian/hadrian.cabal"
     else null;
 in
-{ system ? builtins.currentSystem
+args@{ system ? builtins.currentSystem
 , nixpkgs
 , all-cabal-hashes
 , bootghc ? "ghc96"
@@ -29,7 +29,8 @@ in
 , withGrind ? !((pkgsFor nixpkgs system).valgrind.meta.broken or false)
 , withSystemLibffi ? false
 , withEMSDK ? false                    # load emscripten for js-backend
-, withWasiSDK ? false                  # load the toolchain for wasm backend
+, withWasm ? false                     # load the toolchain for wasm backend
+, withWasiSDK ? false                  # Backward compat synonym for withWasm.
 , withFindNoteDef ? true              # install a shell script `find_note_def`;
   # `find_note_def "Adding a language extension"`
   # will point to the definition of the Note "Adding a language extension"
@@ -38,7 +39,15 @@ in
 , crossTarget ? null
 }:
 
+# Assert that args has only one of withWasm and withWasiSDK.
 let
+  wasi = args ? withWasiSDK;
+  wasm = args ? withWasm;
+in
+assert (wasi -> !wasm) && (wasm -> !wasi);
+let
+  # Fold in the backward-compat synonym.
+  withWasm' = withWasm || withWasiSDK;
   overlay = self: super: {
     haskell = super.haskell // {
       packages = super.haskell.packages // {
@@ -115,7 +124,7 @@ let
     ++ optional withLlvm llvmForGhc
     ++ optional withGrind valgrind
     ++ optional withEMSDK emscripten
-    ++ optionals withWasiSDK [ wasi-sdk wasmtime ]
+    ++ optionals withWasm' [ wasi-sdk wasmtime ]
     ++ optional withNuma numactl
     ++ optional withDwarf elfutils
     ++ optional withGhcid ghcid
@@ -270,7 +279,8 @@ hspkgs.shellFor rec {
     ${lib.optionalString withDocs "export FONTCONFIG_FILE=${fonts}"}
 
     # N.B. This overrides CC, CONFIGURE_ARGS, etc. to configure the cross-compiler.
-    ${lib.optionalString withWasiSDK "addWasiSDKHook"}
+    # See https://gitlab.haskell.org/ghc/ghc-wasm-meta/-/blob/master/pkgs/wasi-sdk-setup-hook.sh
+    ${lib.optionalString withWasm' "addWasiSDKHook"}
 
     >&2 echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS:"
     >&2 echo "or use the configure_ghc command):"
