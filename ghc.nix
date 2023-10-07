@@ -249,6 +249,8 @@ hspkgs.shellFor rec {
     "--target=${crossTarget}"
   ];
 
+  LD_LIBRARY_PATH = "${stdenv.cc.cc.lib}/lib:${lib.makeLibraryPath depsSystem}";
+
   shellHook = ''
     # somehow, CC gets overridden so we set it again here.
     export CC=${stdenv.cc}/bin/cc
@@ -273,7 +275,6 @@ hspkgs.shellFor rec {
 
     # "nix-shell --pure" resets LANG to POSIX, this breaks "make TAGS".
     export LANG="en_US.UTF-8"
-    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${lib.makeLibraryPath depsSystem}"
     unset LD
 
     ${lib.optionalString withDocs "export FONTCONFIG_FILE=${fonts}"}
