@@ -9,6 +9,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
     parts.url = "github:hercules-ci/flake-parts";
+    devshell.url = "github:numtide/devshell";
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
@@ -30,21 +31,6 @@
   };
 
   outputs = inputs:
-    let
-      defaultSettings = system: {
-        inherit system;
-        inherit (inputs) nixpkgs;
-        inherit (inputs.ghc-wasm-meta.outputs.packages."${system}") wasi-sdk wasmtime;
-        all-cabal-hashes = inputs.all-cabal-hashes.outPath;
-      };
-
-      # NOTE: change this according to the settings allowed in the ./ghc.nix file and described
-      # in the `README.md`
-      userSettings = {
-        withHadrianDeps = true;
-        withIde = true;
-      };
-    in
     inputs.parts.lib.mkFlake { inherit inputs; } {
       systems =
         # allow nix flake show and nix flake check when passing --impure
@@ -52,9 +38,11 @@
         then [ builtins.currentSystem ]
         else inputs.nixpkgs.lib.systems.flakeExposed;
       imports = [
+        (import ./modules/flake-module.nix)
         inputs.pre-commit-hooks.flakeModule
+        inputs.devshell.flakeModule
       ];
-      perSystem = { config, pkgs, system, ... }: {
+      perSystem = { config, system, ... }: {
         pre-commit = {
           check.enable = true;
           settings.hooks = {
@@ -64,21 +52,37 @@
             typos.enable = true;
           };
         };
-
-        devShells = rec {
+        ghc-nix-shells = rec {
+          ghc-nix.settings = {
+            inherit (inputs) nixpkgs all-cabal-hashes;
+          };
           default = ghc-nix;
-          ghc-nix = import ./ghc.nix (defaultSettings system // userSettings);
-          wasm-cross = import ./ghc.nix (defaultSettings system // userSettings // { withWasm = true; });
+          js-cross.settings = {
+            inherit (inputs) nixpkgs all-cabal-hashes;
+            crossTarget = "javascript-unknown-ghcjs";
+            EMSDK.enable = true;
+            dwarf.enable = false;
+          };
+          wasm-cross.settings = {
+            inherit (inputs) nixpkgs all-cabal-hashes;
+            wasi-sdk.package = inputs.ghc-wasm-meta.packages.${system}.wasi-sdk;
+            wasmtime.package = inputs.ghc-wasm-meta.packages.${system}.wasmtime;
+            wasm.enable = true;
+          };
           # Backward compat synonym
           wasi-cross = wasm-cross;
-          js-cross = import ./ghc.nix (defaultSettings system // userSettings // {
-            crossTarget = "javascript-unknown-ghcjs";
-            withEMSDK = true;
-            withDwarf = false;
-          });
+        };
 
-          formatting = pkgs.mkShell {
-            shellHook = config.pre-commit.installationScript;
+        devshells = {
+          formatting = {
+            devshell.startup.pre-commit-hooks.text = config.pre-commit.installationScript;
+            commands = [
+              {
+                name = "format";
+                help = "format all files";
+                command = "pre-commit run --all-files";
+              }
+            ];
           };
         };
 
@@ -89,7 +93,16 @@
       };
       flake = _: {
         # NOTE: this attribute is used by the flake-compat code to allow passing arguments to ./ghc.nix
-        legacy = args: import ./ghc.nix (defaultSettings args.system // args);
+        legacy =
+          let
+            defaultSettings = system: {
+              inherit system;
+              inherit (inputs) nixpkgs;
+              inherit (inputs.ghc-wasm-meta.outputs.packages."${system}") wasi-sdk wasmtime;
+              all-cabal-hashes = inputs.all-cabal-hashes.outPath;
+            };
+          in
+          args: import ./ghc.nix (defaultSettings args.system // args);
         flakeModule = import ./modules/flake-module.nix;
         templates = {
           default = {
