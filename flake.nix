@@ -42,7 +42,7 @@
         inputs.pre-commit-hooks.flakeModule
         inputs.devshell.flakeModule
       ];
-      perSystem = { config, system, ... }: {
+      perSystem = { config, system, lib, pkgs, ... }: {
         pre-commit = {
           check.enable = true;
           settings.hooks = {
@@ -85,24 +85,52 @@
             ];
           };
         };
-
         checks = {
           ghc-nix-shell = config.devShells.ghc-nix;
         };
 
-      };
-      flake = _: {
-        # NOTE: this attribute is used by the flake-compat code to allow passing arguments to ./ghc.nix
-        legacy =
+        packages.moduleDocs =
           let
-            defaultSettings = system: {
-              inherit system;
-              inherit (inputs) nixpkgs;
-              inherit (inputs.ghc-wasm-meta.outputs.packages."${system}") wasi-sdk wasmtime;
-              all-cabal-hashes = inputs.all-cabal-hashes.outPath;
+            eval = lib.evalModules { modules = import ./modules/modules.nix { inherit pkgs system lib; }; };
+            moduleDocs = (pkgs.nixosOptionsDoc { inherit (eval) options; }).optionsCommonMark;
+            summary = pkgs.writeTextFile {
+              name = "SUMMARY.md";
+              text = ''
+                # `ghc.nix` documentation
+
+                - [getting started](./README.md)
+                - [module options](./module-docs.md)
+              '';
+            };
+            booktoml = pkgs.writeTextFile {
+              name = "book.toml";
+              text = ''
+                [book]
+                authors = ["The GHC.nix contributors"]
+                title = "GHC.nix documentation"
+                language = "en"
+                multilingual = false
+                src = "src"
+              '';
             };
           in
-          args: import ./ghc.nix (defaultSettings args.system // args);
+          pkgs.runCommand "mdbook"
+            {
+              nativeBuildInputs = [
+                pkgs.mdbook
+              ];
+            } ''
+            mkdir -p src
+            cp ${booktoml} ./book.toml
+            cp ${summary} ./src/SUMMARY.md
+            cat ${./README.md} > ./src/README.md
+            cat ${moduleDocs} > ./src/module-docs.md
+            ls src
+            mdbook build
+            mv book $out
+          '';
+      };
+      flake = _: {
         flakeModule = import ./modules/flake-module.nix;
         templates = {
           default = {
@@ -125,6 +153,17 @@
             '';
           };
         };
+        # NOTE: this attribute is used by the flake-compat code to allow passing arguments to ./ghc.nix
+        legacy =
+          let
+            defaultSettings = system: {
+              inherit system;
+              inherit (inputs) nixpkgs;
+              inherit (inputs.ghc-wasm-meta.outputs.packages."${system}") wasi-sdk wasmtime;
+              all-cabal-hashes = inputs.all-cabal-hashes.outPath;
+            };
+          in
+          args: import ./ghc.nix (defaultSettings args.system // args);
       };
     };
 }

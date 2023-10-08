@@ -34,6 +34,21 @@ This repository is flakes enabled, which means, that you can more easily get a `
 nix develop github:alpmestan/ghc.nix
 ```
 
+### Using flakes (The *modern* way)
+
+We provide an ergonomic setup based on [flake parts](https://flake.parts) that can give you an easy to configure,
+easy to read, extensible and fully controllable flake within seconds, just run:
+
+```sh
+nix flake init -t github:alpmestan/ghc.nix#modules
+```
+
+within your local GHC checkout. Don't forget to install `direnv` beforehand. Now you only
+have to run `direnv allow` to be dropped in a `devShell`. Look at the local `flake.nix`
+for configuration and use the module docs to get started (hosted on `ghc.nix`' github pages or locally
+by running `nix build github:alpmestan/ghc.nix#moduleDocs` and opening `result/index.html`.
+
+
 ## Building GHC
 
 These commands assume you have cloned this repository
