@@ -46,8 +46,8 @@ nix flake init -t github:alpmestan/ghc.nix#modules
 within your local GHC checkout. Don't forget to install `direnv` beforehand. Now you only
 have to run `direnv allow` to be dropped in a `devShell`. Look at the local `flake.nix`
 for configuration and use the module docs to get started (hosted on `ghc.nix`' github pages or locally
-by running `nix build github:alpmestan/ghc.nix#moduleDocs` and opening `result/index.html`.
-
+by running `nix build github:alpmestan/ghc.nix#moduleDocs` and opening `result/index.html` or by running
+`nix run github:alpmestan/ghx.nix#serveModuleDocs` and visiting `http://localhost:8080`
 
 ## Building GHC
 

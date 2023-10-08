@@ -89,6 +89,14 @@
           ghc-nix-shell = config.devShells.ghc-nix;
         };
 
+        apps.serveModuleDocs.program = pkgs.writeShellApplication {
+          name = "serve-module-docs";
+          runtimeInputs = [ pkgs.darkhttpd ];
+          text = ''
+            darkhttpd ${config.packages.moduleDocs}
+          '';
+        };
+
         packages.moduleDocs =
           let
             eval = lib.evalModules { modules = import ./modules/modules.nix { inherit pkgs system lib; }; };
