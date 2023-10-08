@@ -8,7 +8,7 @@
   };
 
   inputs = {
-    ghc-nix.url = "/home/mangoiv/Devel/ghc.nix";
+    ghc-nix.url = "github:alpmesta/ghx.nix";
     parts.follows = "ghc-nix/parts";
     nixpkgs.follows = "ghc-nix/nixpkgs";
     all-cabal-hashes.follows = "ghc-nix/all-cabal-hashes";
