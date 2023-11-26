@@ -142,6 +142,24 @@ nix develop github:alpmestan/ghc.nix#js-cross
 **Note** for the JavaScript backend, use `bignum=native` or the `native_bignum`
 transformer.
 
+## Building a cross-compiler
+
+Cross-compiling in this section means: GHC is developed/built on one
+architecture (`--build`) to run on the same architecture (`--host`) and target
+another architecture (`--target`).
+
+E.g. develop GHC on *amd64*, run it on *amd64* and let the resulting GHC produce
+binaries for *riscv64*.
+
+The `crossTarget` argument defines the target. The string must be a supported
+architecture in `nixpkgs.pkgsCross`. When `crossTarget` is defined, all required
+environment variables and `configure_ghc` parameters are setup for building a
+cross-compiler.
+
+``` sh
+nix-shell --pure ghc.nix/shell.nix --arg withLlvm true --arg crossTarget '"riscv64"'
+```
+
 ## Cachix
 
 There is a Cachix cache ([ghc-nix](https://app.cachix.org/cache/ghc-nix)) which is filled by our CI. To use it, run the following command and follow the instructions:
