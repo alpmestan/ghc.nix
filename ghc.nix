@@ -181,13 +181,15 @@ let
     then
       hspkgs.callCabal2nix "hadrian" hadrianCabal
         (
-          let
-            guessedGhcSrcDir = dirOf (dirOf hadrianCabal);
-          in
-          rec {
-            ghc-platform = hspkgs.callCabal2nix "ghc-platform" (/. + guessedGhcSrcDir + "/libraries/ghc-platform") { };
-            ghc-toolchain = hspkgs.callCabal2nix "ghc-toolchain" (/. + guessedGhcSrcDir + "/utils/ghc-toolchain") { inherit ghc-platform; };
-          }
+          if lib.versionAtLeast version "9.9" then
+            let
+              guessedGhcSrcDir = dirOf (dirOf hadrianCabal);
+            in
+            rec {
+              ghc-platform = hspkgs.callCabal2nix "ghc-platform" (/. + guessedGhcSrcDir + "/libraries/ghc-platform") { };
+              ghc-toolchain = hspkgs.callCabal2nix "ghc-toolchain" (/. + guessedGhcSrcDir + "/utils/ghc-toolchain") { inherit ghc-platform; };
+            }
+          else {}
         )
     else
       (hspkgs.mkDerivation {
