@@ -8,6 +8,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
+    unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
@@ -28,7 +29,7 @@
     ghc-wasm-meta.url = "gitlab:ghc/ghc-wasm-meta?host=gitlab.haskell.org";
   };
 
-  outputs = { nixpkgs, all-cabal-hashes, pre-commit-hooks, ghc-wasm-meta, ... }: with nixpkgs.lib; let
+  outputs = { nixpkgs, unstable, all-cabal-hashes, pre-commit-hooks, ghc-wasm-meta, ... }: with nixpkgs.lib; let
     supportedSystems =
       # allow nix flake show and nix flake check when passing --impure
       if builtins.hasAttr "currentSystem" builtins
@@ -39,7 +40,7 @@
     lib = { inherit supportedSystems perSystem; };
 
     defaultSettings = system: {
-      inherit nixpkgs system;
+      inherit nixpkgs system unstable;
       all-cabal-hashes = all-cabal-hashes.outPath;
       inherit (ghc-wasm-meta.outputs.packages."${system}") wasi-sdk wasmtime;
     };

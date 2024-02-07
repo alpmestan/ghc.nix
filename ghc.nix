@@ -13,6 +13,7 @@ let
 in
 args@{ system ? builtins.currentSystem
 , nixpkgs
+, unstable
 , all-cabal-hashes
 , bootghc ? "ghc96"
 , version ? "9.9"
@@ -31,7 +32,7 @@ args@{ system ? builtins.currentSystem
 , withEMSDK ? false                    # load emscripten for js-backend
 , withWasm ? false                     # load the toolchain for wasm backend
 , withWasiSDK ? false                  # Backward compat synonym for withWasm.
-, withFindNoteDef ? true              # install a shell script `find_note_def`;
+, withFindNoteDef ? true               # install a shell script `find_note_def`;
   # `find_note_def "Adding a language extension"`
   # will point to the definition of the Note "Adding a language extension"
 , wasi-sdk
@@ -72,6 +73,7 @@ let
   };
 
   pkgs = import nixpkgs { inherit system; overlays = [ overlay ]; };
+  u-pkgs = import unstable { inherit system; overlays = [ overlay ]; };
 in
 
 with pkgs;
@@ -99,6 +101,9 @@ let
   fonts = pkgs.makeFontsConf { fontDirectories = [ pkgs.dejavu_fonts ]; };
   docsPackages = if withDocs then [ python3Packages.sphinx ourtexlive ] else [ ];
 
+  ourNode = u-pkgs.nodejs_21;
+  ourEmscripten = emscripten.override { nodejs = ourNode; };
+
   depsSystem = with lib; (
     [
       autoconf
@@ -123,7 +128,8 @@ let
     ++ docsPackages
     ++ optional withLlvm llvmForGhc
     ++ optional withGrind valgrind
-    ++ optional withEMSDK emscripten
+    ++ optional withEMSDK ourEmscripten
+    ++ optional withEMSDK ourNode
     ++ optionals withWasm' [ wasi-sdk wasmtime ]
     ++ optional withNuma numactl
     ++ optional withDwarf elfutils
@@ -257,8 +263,8 @@ hspkgs.shellFor rec {
     export HAPPY=${happy}/bin/happy
     export ALEX=${alex}/bin/alex
     export CONFIGURE=./configure
-    ${lib.optionalString withEMSDK "export EMSDK=${emscripten}"}
-    ${lib.optionalString withEMSDK "export EMSDK_LLVM=${emscripten}/bin/emscripten-llvm"}
+    ${lib.optionalString withEMSDK "export EMSDK=${ourEmscripten}"}
+    ${lib.optionalString withEMSDK "export EMSDK_LLVM=${ourEmscripten}/bin/emscripten-llvm"}
     ${ # prevents sub word sized atomic operations not available issues
        # see: https://gitlab.haskell.org/ghc/ghc/-/wikis/javascript-backend/building#configure-fails-with-sub-word-sized-atomic-operations-not-available
       lib.optionalString withEMSDK ''
