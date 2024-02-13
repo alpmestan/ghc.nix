@@ -49,6 +49,7 @@ let
   # Fold in the backward-compat synonym.
   withWasm' = withWasm || withWasiSDK;
   overlay = self: super: {
+    nodejs = super.nodejs_21;
     haskell = super.haskell // {
       packages = super.haskell.packages // {
         ${bootghc} = super.haskell.packages.${bootghc}.override (old: {
@@ -123,7 +124,7 @@ let
     ++ docsPackages
     ++ optional withLlvm llvmForGhc
     ++ optional withGrind valgrind
-    ++ optional withEMSDK emscripten
+    ++ optionals withEMSDK [ emscripten nodejs ]
     ++ optionals withWasm' [ wasi-sdk wasmtime ]
     ++ optional withNuma numactl
     ++ optional withDwarf elfutils
