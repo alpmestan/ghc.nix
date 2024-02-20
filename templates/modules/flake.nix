@@ -8,7 +8,7 @@
   };
 
   inputs = {
-    ghc-nix.url = "github:alpmesta/ghx.nix";
+    ghc-nix.url = "github:alpmestan/ghc.nix";
     parts.follows = "ghc-nix/parts";
     nixpkgs.follows = "ghc-nix/nixpkgs";
     all-cabal-hashes.follows = "ghc-nix/all-cabal-hashes";
@@ -18,7 +18,7 @@
   outputs = inputs:
     inputs.parts.lib.mkFlake { inherit inputs; } {
       imports = [ inputs.ghc-nix.flakeModule ];
-      systems = [ "x86_64-linux" ];
+      systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-linux" ];
       perSystem = { system, ... }: {
         ghc-nix-shells = {
           default.settings = {
