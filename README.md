@@ -34,6 +34,21 @@ This repository is flakes enabled, which means, that you can more easily get a `
 nix develop github:alpmestan/ghc.nix
 ```
 
+### Using flakes (The *modern* way)
+
+We provide an ergonomic setup based on [flake parts](https://flake.parts) that can give you an easy to configure,
+easy to read, extensible and fully controllable flake within seconds, just run:
+
+```sh
+nix flake init -t github:alpmestan/ghc.nix#modules
+```
+
+within your local GHC checkout. Don't forget to install `direnv` beforehand. Now you only
+have to run `direnv allow` to be dropped in a `devShell`. Look at the local `flake.nix`
+for configuration and use the module docs to get started (hosted on `ghc.nix`' github pages or locally
+by running `nix build github:alpmestan/ghc.nix#moduleDocs` and opening `result/index.html` or by running
+`nix run github:alpmestan/ghx.nix#serveModuleDocs` and visiting `http://localhost:8080`
+
 ## Building GHC
 
 These commands assume you have cloned this repository
@@ -181,7 +196,7 @@ To format all nix code in this repository, run `nix fmt`, to enter a development
 > Building a derivation from the local (ghc) hadrian requires `builtins.getEnv` which is only available if `--impure` is passed.
 
 
-### Using the flake template
+### Using the flake templates
 
 It is common that you want to change the settings that `ghc.nix` uses to set up a `devShell`. Currently there is
 no good way in `nix` to pass `nix` expressions to flakes.
@@ -191,8 +206,16 @@ This is why we provide a flake template that you can add to your git worktree as
 $ nix flake init -t github:alpmestan/ghc.nix
 ```
 
+alternatively (and recommendedly) run
+
+```sh
+$ nix flake init -t github:alpmestan/ghc.nix#modules
+```
+
+to get started with flake modules which offer a cleaner setup and better error messages.
+
 This will add three files to your worktree:
-- a `flake.nix` which you can edit your `userSettings` in as usual
+- a `flake.nix` which you can edit your `userSettings` in as usual (or edit the settings of the ghc-nix-shell attribute)
 - a `flake.lock` file which pins the `ghc.nix` version and transitively `nixpkgs` and `all-cabal-hashes`
 - a `.envrc` file for convenient use with `direnv`
 

@@ -37,6 +37,7 @@ args@{ system ? builtins.currentSystem
 , wasi-sdk
 , wasmtime
 , crossTarget ? null
+, extra-tools ? [ ]
 }:
 
 # Assert that args has only one of withWasm and withWasiSDK.
@@ -161,6 +162,7 @@ let
     configureGhc
     validateGhc
   ]
+  ++ extra-tools
   ++ lib.optional withFindNoteDef findNoteDef
   ;
 
