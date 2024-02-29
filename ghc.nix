@@ -24,9 +24,11 @@ args@{ system ? builtins.currentSystem
 , withIde ? false
 , withHadrianDeps ? false
 , withDwarf ? (pkgsFor nixpkgs system).stdenv.isLinux  # enable libdw unwinding support
+, withGdb ? !((pkgsFor nixpkgs system).gdb.meta.broken or false)
 , withNuma ? (pkgsFor nixpkgs system).stdenv.isLinux
 , withDtrace ? (pkgsFor nixpkgs system).stdenv.isLinux
 , withGrind ? !((pkgsFor nixpkgs system).valgrind.meta.broken or false)
+, withPerf ? (pkgsFor nixpkgs system).stdenv.isLinux
 , withSystemLibffi ? false
 , withEMSDK ? false                    # load emscripten for js-backend
 , withWasm ? false                     # load the toolchain for wasm backend
@@ -123,10 +125,12 @@ let
     ++ docsPackages
     ++ optional withLlvm llvmForGhc
     ++ optional withGrind valgrind
+    ++ optional withPerf linuxPackages.perf 
     ++ optional withEMSDK emscripten
     ++ optionals withWasm' [ wasi-sdk wasmtime ]
     ++ optional withNuma numactl
     ++ optional withDwarf elfutils
+    ++ optional withGdb gdb 
     ++ optional withGhcid ghcid
     ++ optional withIde hspkgs.haskell-language-server
     ++ optional withIde clang-tools # N.B. clang-tools for clangd
