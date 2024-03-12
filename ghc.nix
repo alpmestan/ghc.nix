@@ -147,8 +147,8 @@ let
 
   alex =
     if lib.versionAtLeast version "9.1"
-    then noTest (hspkgs.callHackage "alex" "3.2.6" { })
-    else noTest (hspkgs.callHackage "alex" "3.2.5" { });
+    then noTest (hspkgs.callHackage "alex" "3.2.7.4" { })
+    else noTest (hspkgs.callHackage "alex" "3.2.7" { });
 
   # Convenient tools
   configureGhc = writeShellScriptBin "configure_ghc" "$CONFIGURE $CONFIGURE_ARGS $@";
