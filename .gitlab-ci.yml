@@ -1,6 +1,36 @@
-build:
-  image: nixos/nix:2.3.12
+stages: 
+  - init 
+  - lint 
+  - build
+
+default: 
   tags:
     - x86_64-linux
+  image: nixos/nix:latest
+  cache: 
+    key: nix-store
+    paths: 
+      - /nix/store/
+      - ~/.config/nix
+
+init:
+  stage: init
   script:
-    - nix build
+    # set p git
+    - git config --global url."git://github.com/ghc/packages-".insteadOf     git://github.com/ghc/packages/ &&
+    - git config --global url."http://github.com/ghc/packages-".insteadOf    http://github.com/ghc/packages/ &&
+    - git config --global url."https://github.com/ghc/packages-".insteadOf   https://github.com/ghc/packages/ &&
+    - git config --global url."ssh://git@github.com/ghc/packages-".insteadOf ssh://git@github.com/ghc/packages/ &&
+    - git config --global url."git@github.com:ghc/packages-".insteadOf       git@github.com:ghc/packages/
+    - git clone --recurse-submodules https://gitlab.haskell.org/ghc/ghc.git
+
+    # set up nix
+    - mkdir -p ~/.config/nix
+    - echo "extra-experimental-features = nix-command flakes" > ~/.config/nix/nix.conf
+    - nix profile install nixpkgs#cachix
+    - cachix use ghc-nix
+
+lint: 
+  stage: lint 
+  script: 
+    - nix flake check ghc.nix# -Lv
