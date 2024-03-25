@@ -75,7 +75,7 @@ let
   };
 
   pkgs = import nixpkgs { inherit system; overlays = [ overlay ]; };
-  pkgs-cross = if crossTarget != null then pkgs.pkgsCross.${crossTarget} else null;
+  pkgs-cross = if crossTargetPkgs != null then pkgs.pkgsCross.${crossTargetPkgs} else null;
 in
 
 with pkgs;
@@ -86,13 +86,19 @@ let
       ps = if crossTarget == null then pkgs else pkgs-cross.buildPackages;
     in
     if lib.versionAtLeast version "9.1"
-    then ps.llvmPackages_12
+    then ps.llvmPackages_14
     else ps.llvmPackages_9;
 
   stdenv =
     if useClang
     then pkgs.clangStdenv
     else pkgs.stdenv;
+
+  crossStdenv =
+    if useClang
+    then pkgs-cross.clangStdenv
+    else pkgs-cross.stdenv;
+
   noTest = haskell.lib.dontCheck;
 
   hspkgs = pkgs.haskell.packages.${bootghc};
@@ -112,8 +118,8 @@ let
       automake
       m4
       less
-      gmp.dev
-      gmp.out
+#      gmp.dev
+#      gmp.out
       glibcLocales
       ncurses.dev
       ncurses.out
@@ -140,6 +146,11 @@ let
     ++ optional withDtrace linuxPackages.systemtap
     ++ optionals withLlvmLit [ lit llvmForGhc.libllvm ]
     ++ optional withQEMU qemu
+    ++ optionals (crossTargetPkgs != null) [
+      pkgs-cross.gmp.dev
+      pkgs-cross.gmp.out
+#      pkgs-cross.gcc.cc.libgcc
+    ]
     ++ (if (! stdenv.isDarwin)
     then [ pxz ]
     else [
@@ -267,7 +278,7 @@ hspkgs.shellFor rec {
       "--with-curses-includes=${pkgs-cross.ncurses.dev}/include"
       "--with-curses-libraries=${pkgs-cross.ncurses.out}/lib"
       "--host=${stdenv.hostPlatform.config}"
-      "--target=${pkgs-cross.stdenv.hostPlatform.config}"
+      "--target=${crossStdenv.hostPlatform.config}"
     ];
 
 
@@ -277,16 +288,17 @@ hspkgs.shellFor rec {
         export CC=${stdenv.cc}/bin/cc
       '' else
       let
-        prefix = pkgs-cross.stdenv.cc.targetPrefix;
+        prefix = crossStdenv.cc.targetPrefix;
       in
       ''
         # somehow, CC gets overridden so we set it again here.
-        export CC=${pkgs-cross.stdenv.cc}/bin/${prefix}cc
-        export CXX=${pkgs-cross.stdenv.cc}/bin/${prefix}c++
-        export AR=${pkgs-cross.stdenv.cc.bintools.bintools}/bin/${prefix}ar
-        export RANLIB=${pkgs-cross.stdenv.cc.bintools.bintools}/bin/${prefix}ranlib
-        export NM=${pkgs-cross.stdenv.cc.bintools.bintools}/bin/${prefix}nm
-        export LD=${pkgs-cross.stdenv.cc.bintools}/bin/${prefix}ld
+        export CC=${crossStdenv.cc}/bin/${prefix}cc
+        export CXX=${crossStdenv.cc}/bin/${prefix}c++
+        export AR=${crossStdenv.cc.bintools.bintools}/bin/${prefix}ar
+        export RANLIB=${crossStdenv.cc.bintools.bintools}/bin/${prefix}ranlib
+        export NM=${crossStdenv.cc.bintools.bintools}/bin/${prefix}nm
+        export LD=${crossStdenv.cc.bintools}/bin/${prefix}ld
+        export LLVMAS=${pkgs-cross.clangStdenv.cc.cc}/bin/clang
       '';
 
   shellHook = ''
