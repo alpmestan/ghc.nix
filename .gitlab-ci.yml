@@ -18,4 +18,6 @@ build:
     - cachix use ghc-nix
 
     # check linting
+    - ls 
+    - pwd
     - nix flake check ghc.nix# -Lv
