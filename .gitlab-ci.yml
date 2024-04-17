@@ -3,6 +3,8 @@ build:
     - x86_64-linux
   image: nixos/nix:latest
   script:
+    # move one directory up (we're already in the checkout of ghc.nix) 
+    - cd ..
     # set p git
     - git config --global url."git://github.com/ghc/packages-".insteadOf     git://github.com/ghc/packages/ &&
     - git config --global url."http://github.com/ghc/packages-".insteadOf    http://github.com/ghc/packages/ &&
@@ -18,6 +20,4 @@ build:
     - cachix use ghc-nix
 
     # check linting
-    - ls 
-    - pwd
     - nix flake check ghc.nix# -Lv
