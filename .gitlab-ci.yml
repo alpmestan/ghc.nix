@@ -1,21 +1,7 @@
-stages: 
-  - init 
-  - lint 
-  - build
-
-default: 
+build:
   tags:
     - x86_64-linux
   image: nixos/nix:latest
-  artifacts: 
-    paths: 
-      - /nix
-      - ~/.config
-      - ~/ghc
-      - ~/ghc.nix
-
-init:
-  stage: init
   script:
     # set p git
     - git config --global url."git://github.com/ghc/packages-".insteadOf     git://github.com/ghc/packages/ &&
@@ -31,9 +17,5 @@ init:
     - nix profile install --impure nixpkgs#cachix
     - cachix use ghc-nix
 
-lint: 
-  stage: lint 
-  dependencies: 
-    - init
-  script: 
+    # check linting
     - nix flake check ghc.nix# -Lv
