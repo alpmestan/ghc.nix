@@ -21,3 +21,24 @@ build:
 
     # check linting
     - nix flake check ghc.nix# -Lv
+
+    # check GHC builds
+    - cd ghc/
+    # on legacy commands ...
+    - nix-shell --pure ../ghc.nix/shell.nix --command "./boot && configure_ghc"
+    - nix-shell --pure ../ghc.nix/shell.nix --command "pushd hadrian; cabal new-update; cabal new-build -j all; popd"
+    - nix-shell --pure ../ghc.nix/shell.nix --command "echo :q | hadrian/ghci | tail -n2 | grep 'Ok,'"
+    - nix-shell --pure ../ghc.nix/shell.nix --command "hadrian/build -j --flavour=quickest"
+    - nix-shell --pure ../ghc.nix/shell.nix --command "hadrian/build -j --flavour=quickest test --test-root-dirs=testsuite/tests/programs"
+
+    # ... and flake commands
+    - nix develop -Lv --fallback ../ghc.nix# -c bash -c "./boot && configure_ghc"
+    - nix develop -Lv --fallback ../ghc.nix# -c bash -c "pushd hadrian; cabal new-update; cabal new-build -j all; popd"
+    - nix develop -Lv --fallback ../ghc.nix# -c bash -c "echo :q | hadrian/ghci | tail -n2 | grep 'Ok,'"
+    - nix develop -Lv --fallback ../ghc.nix# -c bash -c "hadrian/build -j --flavour=quickest"
+    - nix develop -Lv --fallback ../ghc.nix# -c bash -c "hadrian/build -j --flavour=quickest test --test-root-dirs=testsuite/tests/programs"
+
+    # wasm and js backends smoketest
+    - nix develop -Lv --fallback ../ghc.nix#wasm-cross -c bash -c "./boot && configure_ghc"
+    - nix develop -Lv --fallback ../ghc.nix#wasi-cross -c true
+    - nix develop -Lv --fallback ../ghc.nix#js-cross -c bash -c "./boot && configure_ghc"
