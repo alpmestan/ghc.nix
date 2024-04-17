@@ -7,11 +7,12 @@ default:
   tags:
     - x86_64-linux
   image: nixos/nix:latest
-  cache: 
-    key: nix-store
+  artifacts: 
     paths: 
-      - /nix/store/
-      - ~/.config/nix
+      - /nix
+      - ~/.config
+      - ~/ghc
+      - ~/ghc.nix
 
 init:
   stage: init
@@ -32,5 +33,7 @@ init:
 
 lint: 
   stage: lint 
+  dependencies: 
+    - init
   script: 
     - nix flake check ghc.nix# -Lv
