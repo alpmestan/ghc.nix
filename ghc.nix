@@ -86,7 +86,7 @@ let
       ps = if crossTarget == null then pkgs else pkgs-cross.buildPackages;
     in
     if lib.versionAtLeast version "9.1"
-    then ps.llvmPackages_14
+    then ps.llvmPackages_15
     else ps.llvmPackages_9;
 
   stdenv =
@@ -132,6 +132,9 @@ let
       zlib.out
       zlib.dev
       hlint
+      pkgs-cross.buildPackages.clang_15
+      pkgs-cross.buildPackages.gcc
+      pkgs-cross.buildPackages.lld_15
     ]
     ++ docsPackages
     ++ optional withLlvm llvmForGhc.llvm
@@ -149,6 +152,9 @@ let
     ++ optionals (crossTargetPkgs != null) [
       pkgs-cross.gmp.dev
       pkgs-cross.gmp.out
+      pkgs-cross.libffi.dev
+#      pkgs-cross.glibc.out
+#      pkgs-cross.glibc.dev
 #      pkgs-cross.gcc.cc.libgcc
     ]
     ++ (if (! stdenv.isDarwin)
@@ -281,7 +287,6 @@ hspkgs.shellFor rec {
       "--target=${crossStdenv.hostPlatform.config}"
     ];
 
-
   targetDependentShellHook =
     if crossTargetPkgs == null then
       ''
@@ -298,7 +303,8 @@ hspkgs.shellFor rec {
         export RANLIB=${crossStdenv.cc.bintools.bintools}/bin/${prefix}ranlib
         export NM=${crossStdenv.cc.bintools.bintools}/bin/${prefix}nm
         export LD=${crossStdenv.cc.bintools}/bin/${prefix}ld
-        export LLVMAS=${pkgs-cross.clangStdenv.cc.cc}/bin/clang
+        export LD=${pkgs-cross.pkgsCross.riscv64.buildPackages.lld_15}/bin/ld.lld
+        export LLVMAS=${pkgs-cross.pkgsCross.riscv64.buildPackages.clang_15}/bin/${prefix}clang
       '';
 
   shellHook = ''
