@@ -156,6 +156,9 @@ let
 #      pkgs-cross.glibc.out
 #      pkgs-cross.glibc.dev
 #      pkgs-cross.gcc.cc.libgcc
+
+      pkgs-cross.ncurses.dev
+      pkgs-cross.ncurses.out
     ]
     ++ (if (! stdenv.isDarwin)
     then [ pxz ]
