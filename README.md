@@ -1,3 +1,7 @@
+**This repository has been moved to https://gitlab.haskell.org/ghc/ghc.nix**
+
+---
+
 These Nix expressions provide an environment for GHC development.
 
 This repository does not contain the GHC sources themselves, so make sure
