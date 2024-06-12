@@ -241,9 +241,11 @@ be careful to specify the path to the `shell.nix`, not to the `default.nix`.
 | `withIde` | whether to include `hls` | `false` | ❌ |
 | `withHadrianDeps` | whether to include dependencies for `hadrian` | `false` | ❌ |
 | `withDwarf` | whether to enable `libdw` unwinding support | `nixpkgs.stdenv.isLinux` | ❌ |
+| `withGdb` | whether to include `gdb` | `true` | ❌ |
 | `withNuma` | whether to enable `numa` support | `nixpkgs.stdenv.isLinux` | ❌ |
 | `withDtrace` | whether to include `linuxPackage.systemtap` |  `nixpkgs.stdenv.isLinux` | ❌ |
 | `withGrind` | whether to include `valgrind` | `true` | ❌ |
+| `withPerf` | whether to include `perf` | `true` | ❌ |
 | `withEMSDK` | whether to include `emscripten` for the js-backend, will create an `.emscripten_cache` folder in your working directory of the shell for writing. `EM_CACHE` is set to that path, prevents [sub word sized atomic](https://gitlab.haskell.org/ghc/ghc/-/wikis/javascript-backend/building#configure-fails-with-sub-word-sized-atomic-operations-not-available) kinds of issues | `false` | ❌ |
 | `withWasm` | whether to include `wasi-sdk` & `wasmtime` for the ghc wasm backend | `false` | ❌ |
 | `withFindNoteDef` | install a shell script `find_note_def`; `find_note_def "Adding a language extension"` will point to the definition of the Note "Adding a language extension" | `true` | ❌ |
