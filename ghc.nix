@@ -37,6 +37,9 @@ args@{ system ? builtins.currentSystem
 , wasi-sdk
 , wasmtime
 , crossTarget ? null
+, crossTargetPkgs ? null # a `nixpkgs.pkgsCross` record, e.g. `riscv64`
+, withQEMU ? false
+, withLlvmLit ? false # for llvm lit tests
 }:
 
 # Assert that args has only one of withWasm and withWasiSDK.
@@ -72,20 +75,30 @@ let
   };
 
   pkgs = import nixpkgs { inherit system; overlays = [ overlay ]; };
+  pkgs-cross = if crossTargetPkgs != null then pkgs.pkgsCross.${crossTargetPkgs} else null;
 in
 
 with pkgs;
 
 let
   llvmForGhc =
+    let
+      ps = if crossTarget == null then pkgs else pkgs-cross.buildPackages;
+    in
     if lib.versionAtLeast version "9.1"
-    then llvm_10
-    else llvm_9;
+    then ps.llvmPackages_15
+    else ps.llvmPackages_9;
 
   stdenv =
     if useClang
     then pkgs.clangStdenv
     else pkgs.stdenv;
+
+  crossStdenv =
+    if useClang
+    then pkgs-cross.clangStdenv
+    else pkgs-cross.stdenv;
+
   noTest = haskell.lib.dontCheck;
 
   hspkgs = pkgs.haskell.packages.${bootghc};
@@ -105,8 +118,8 @@ let
       automake
       m4
       less
-      gmp.dev
-      gmp.out
+#      gmp.dev
+#      gmp.out
       glibcLocales
       ncurses.dev
       ncurses.out
@@ -119,9 +132,12 @@ let
       zlib.out
       zlib.dev
       hlint
+      pkgs-cross.buildPackages.clang_15
+      pkgs-cross.buildPackages.gcc
+      pkgs-cross.buildPackages.lld_15
     ]
     ++ docsPackages
-    ++ optional withLlvm llvmForGhc
+    ++ optional withLlvm llvmForGhc.llvm
     ++ optional withGrind valgrind
     ++ optional withEMSDK emscripten
     ++ optionals withWasm' [ wasi-sdk wasmtime ]
@@ -131,6 +147,19 @@ let
     ++ optional withIde hspkgs.haskell-language-server
     ++ optional withIde clang-tools # N.B. clang-tools for clangd
     ++ optional withDtrace linuxPackages.systemtap
+    ++ optionals withLlvmLit [ lit llvmForGhc.libllvm ]
+    ++ optional withQEMU qemu
+    ++ optionals (crossTargetPkgs != null) [
+      pkgs-cross.gmp.dev
+      pkgs-cross.gmp.out
+      pkgs-cross.libffi.dev
+#      pkgs-cross.glibc.out
+#      pkgs-cross.glibc.dev
+#      pkgs-cross.gcc.cc.libgcc
+
+      pkgs-cross.ncurses.dev
+      pkgs-cross.ncurses.out
+    ]
     ++ (if (! stdenv.isDarwin)
     then [ pxz ]
     else [
@@ -172,13 +201,15 @@ let
     then
       hspkgs.callCabal2nix "hadrian" hadrianCabal
         (
-          let
-            guessedGhcSrcDir = dirOf (dirOf hadrianCabal);
-          in
-          rec {
-            ghc-platform = hspkgs.callCabal2nix "ghc-platform" (/. + guessedGhcSrcDir + "/libraries/ghc-platform") { };
-            ghc-toolchain = hspkgs.callCabal2nix "ghc-toolchain" (/. + guessedGhcSrcDir + "/utils/ghc-toolchain") { inherit ghc-platform; };
-          }
+          if lib.versionAtLeast version "9.9" then
+            let
+              guessedGhcSrcDir = dirOf (dirOf hadrianCabal);
+            in
+            rec {
+              ghc-platform = hspkgs.callCabal2nix "ghc-platform" (/. + guessedGhcSrcDir + "/libraries/ghc-platform") { };
+              ghc-toolchain = hspkgs.callCabal2nix "ghc-toolchain" (/. + guessedGhcSrcDir + "/utils/ghc-toolchain") { inherit ghc-platform; };
+            }
+          else {}
         )
     else
       (hspkgs.mkDerivation {
@@ -229,29 +260,57 @@ hspkgs.shellFor rec {
   # In particular, this makes many tests fail because those warnings show up in test outputs too...
   # The solution is from: https://github.com/NixOS/nix/issues/318#issuecomment-52986702
   LOCALE_ARCHIVE = if stdenv.isLinux then "${glibcLocales}/lib/locale/locale-archive" else "";
-  CONFIGURE_ARGS = [
-    "--with-gmp-includes=${gmp.dev}/include"
-    "--with-gmp-libraries=${gmp}/lib"
-    "--with-curses-includes=${ncurses.dev}/include"
-    "--with-curses-libraries=${ncurses.out}/lib"
-  ] ++ lib.optionals withNuma [
-    "--with-libnuma-includes=${numactl}/include"
-    "--with-libnuma-libraries=${numactl}/lib"
-  ] ++ lib.optionals withDwarf [
-    "--with-libdw-includes=${elfutils.dev}/include"
-    "--with-libdw-libraries=${elfutils.out}/lib"
-    "--enable-dwarf-unwind"
-  ] ++ lib.optionals withSystemLibffi [
-    "--with-system-libffi"
-    "--with-ffi-includes=${libffi.dev}/include"
-    "--with-ffi-libraries=${libffi.out}/lib"
-  ] ++ lib.optionals (crossTarget != null) [
-    "--target=${crossTarget}"
-  ];
+
+  CONFIGURE_ARGS =
+    if crossTargetPkgs == null then
+      [
+        "--with-gmp-includes=${gmp.dev}/include"
+        "--with-gmp-libraries=${gmp}/lib"
+        "--with-curses-includes=${ncurses.dev}/include"
+        "--with-curses-libraries=${ncurses.out}/lib"
+      ] ++ lib.optionals withNuma [
+        "--with-libnuma-includes=${numactl}/include"
+        "--with-libnuma-libraries=${numactl}/lib"
+      ] ++ lib.optionals withDwarf [
+        "--with-libdw-includes=${elfutils.dev}/include"
+        "--with-libdw-libraries=${elfutils.out}/lib"
+        "--enable-dwarf-unwind"
+      ]  ++ lib.optionals withSystemLibffi [
+        "--with-system-libffi"
+        "--with-ffi-includes=${libffi.dev}/include"
+        "--with-ffi-libraries=${libffi.out}/lib"
+      ]  ++ lib.optionals (crossTarget != null) [
+        "--target=${crossTarget}"
+      ] else [
+      "--with-gmp-includes=${pkgs-cross.gmp.dev}/include"
+      "--with-gmp-libraries=${pkgs-cross.gmp}/lib"
+      "--with-curses-includes=${pkgs-cross.ncurses.dev}/include"
+      "--with-curses-libraries=${pkgs-cross.ncurses.out}/lib"
+      "--host=${stdenv.hostPlatform.config}"
+      "--target=${crossStdenv.hostPlatform.config}"
+    ];
+
+  targetDependentShellHook =
+    if crossTargetPkgs == null then
+      ''
+        export CC=${stdenv.cc}/bin/cc
+      '' else
+      let
+        prefix = crossStdenv.cc.targetPrefix;
+      in
+      ''
+        # somehow, CC gets overridden so we set it again here.
+        export CC=${crossStdenv.cc}/bin/${prefix}cc
+        export CXX=${crossStdenv.cc}/bin/${prefix}c++
+        export AR=${crossStdenv.cc.bintools.bintools}/bin/${prefix}ar
+        export RANLIB=${crossStdenv.cc.bintools.bintools}/bin/${prefix}ranlib
+        export NM=${crossStdenv.cc.bintools.bintools}/bin/${prefix}nm
+        export LD=${crossStdenv.cc.bintools}/bin/${prefix}ld
+        export LD=${pkgs-cross.pkgsCross.riscv64.buildPackages.lld_15}/bin/ld.lld
+        export LLVMAS=${pkgs-cross.pkgsCross.riscv64.buildPackages.clang_15}/bin/${prefix}clang
+      '';
 
   shellHook = ''
-    # somehow, CC gets overridden so we set it again here.
-    export CC=${stdenv.cc}/bin/cc
     export GHC=$NIX_GHC
     export GHCPKG=$NIX_GHCPKG
     export HAPPY=${happy}/bin/happy
@@ -268,8 +327,8 @@ hspkgs.shellFor rec {
       >&2 echo "N.B. You will need to invoke Hadrian with --bignum=native"
       >&2 echo ""
     ''}
-    ${lib.optionalString withLlvm "export LLC=${llvmForGhc}/bin/llc"}
-    ${lib.optionalString withLlvm "export OPT=${llvmForGhc}/bin/opt"}
+    ${lib.optionalString withLlvm "export LLC=${llvmForGhc.llvm}/bin/llc"}
+    ${lib.optionalString withLlvm "export OPT=${llvmForGhc.llvm}/bin/opt"}
 
     # "nix-shell --pure" resets LANG to POSIX, this breaks "make TAGS".
     export LANG="en_US.UTF-8"
@@ -282,8 +341,10 @@ hspkgs.shellFor rec {
     # See https://gitlab.haskell.org/ghc/ghc-wasm-meta/-/blob/master/pkgs/wasi-sdk-setup-hook.sh
     ${lib.optionalString withWasm' "addWasiSDKHook"}
 
+    ${targetDependentShellHook}
     >&2 echo "Recommended ./configure arguments (found in \$CONFIGURE_ARGS:"
-    >&2 echo "or use the configure_ghc command):"
+    >&2 echo "or use the configure_ghc command - passing \$CONFIGURE_ARGS"
+    >&2 echo "itself to ./configure might not work):"
     >&2 echo ""
     >&2 echo "  ${lib.concatStringsSep "\n  " CONFIGURE_ARGS}"
   '';
