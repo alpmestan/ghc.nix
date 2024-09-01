@@ -7,7 +7,7 @@
   };
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
